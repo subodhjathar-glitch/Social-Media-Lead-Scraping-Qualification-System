@@ -1,6 +1,4 @@
-"""
-AI-powered lead qualification using OpenAI GPT-4o-mini
-"""
+"""AI-powered lead qualification using OpenAI GPT-4o-mini"""
 
 import json
 from typing import Dict, List
