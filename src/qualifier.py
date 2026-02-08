@@ -60,7 +60,8 @@ Be generous with Medium ratings for genuine spiritual seekers.
 
     def __init__(self):
         """Initialize OpenAI client."""
-        self.client = OpenAI(api_key=settings.openai_api_key)
+        self.client = OpenAI()
+
 
     @retry(
         stop=stop_after_attempt(3),
