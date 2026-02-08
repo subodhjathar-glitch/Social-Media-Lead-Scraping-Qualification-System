@@ -1,5 +1,6 @@
 """Test script to verify environment setup and API connections."""
 
+import os
 import sys
 from datetime import datetime
 
@@ -48,6 +49,32 @@ def test_config():
     """Test that configuration can be loaded."""
     print("\nTesting configuration...")
     try:
+        # Show where .env is loaded from (pydantic-settings uses current working directory)
+        cwd = os.getcwd()
+        env_path = os.path.abspath(os.path.join(cwd, ".env"))
+        print(f"  .env path: {env_path}")
+        if not os.path.isfile(env_path):
+            print("  ✗ .env file not found at this path. Create it: cp .env.example .env")
+            return False
+        print("  ✓ .env file found")
+
+        # Shell env vars override .env - check if placeholders are coming from the shell
+        env_keys = [
+            "YOUTUBE_API_KEY", "OPENAI_API_KEY", "AIRTABLE_TOKEN", "AIRTABLE_BASE_ID",
+            "EMAIL_FROM", "EMAIL_TO", "EMAIL_PASSWORD"
+        ]
+        from_env = [k for k in env_keys if os.environ.get(k, "").strip()]
+        if from_env:
+            placeholder_like = [
+                k for k in from_env
+                if "your_" in (os.environ.get(k) or "") or "_here" in (os.environ.get(k) or "")
+            ]
+            if placeholder_like:
+                print(f"  ⚠ Shell has placeholder values for: {', '.join(placeholder_like)}")
+                print("    Unset them so .env is used: unset YOUTUBE_API_KEY OPENAI_API_KEY AIRTABLE_TOKEN AIRTABLE_BASE_ID EMAIL_FROM EMAIL_TO EMAIL_PASSWORD")
+                print("    Then run this test again.")
+                return False
+
         from src.config import settings
 
         # Check required fields
@@ -72,7 +99,27 @@ def test_config():
 
         if missing:
             print(f"\n  Missing or invalid configuration: {', '.join(missing)}")
-            print("  Please edit your .env file with valid API keys")
+            # Check .env file content for placeholder text (without printing secrets)
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                placeholders_in_file = []
+                for line in content.splitlines():
+                    line = line.strip()
+                    if line.startswith("#") or "=" not in line:
+                        continue
+                    key, _, val = line.partition("=")
+                    key, val = key.strip(), val.strip().strip('"').strip("'")
+                    if not val or "your_" in val or "_here" in val:
+                        placeholders_in_file.append(key)
+                if placeholders_in_file:
+                    print(f"  Your .env file still has placeholder values for: {', '.join(placeholders_in_file)}")
+                    print("  Replace them with real keys and save the file.")
+            except Exception:
+                pass
+            print("  Use one variable per line, no spaces around =, e.g.:")
+            print("    YOUTUBE_API_KEY=your_actual_key")
+            print("  Save the file and run this test again from the project directory.")
             return False
 
         return True
@@ -128,8 +175,13 @@ def test_openai_api():
         return True
 
     except Exception as e:
+        err_str = str(e)
         print(f"  ✗ OpenAI API error: {e}")
-        print("  Check your OPENAI_API_KEY in .env")
+        if "429" in err_str or "quota" in err_str.lower() or "insufficient_quota" in err_str:
+            print("  → This is a quota/billing limit. Add a payment method or upgrade at:")
+            print("    https://platform.openai.com/account/billing")
+        else:
+            print("  Check your OPENAI_API_KEY in .env")
         return False
 
 
@@ -152,9 +204,41 @@ def test_airtable_api():
         return True
 
     except Exception as e:
+        err_str = str(e)
         print(f"  ✗ Airtable API error: {e}")
-        print("  Check your AIRTABLE_TOKEN and AIRTABLE_BASE_ID in .env")
-        print("  Also verify the 'Leads' table exists in your Airtable base")
+        if "404" in err_str or "NOT_FOUND" in err_str:
+            print("  → 404 means the base or table wasn't found. Checking which bases your token can access...")
+            try:
+                import requests
+                from src.config import settings
+                r = requests.get(
+                    "https://api.airtable.com/v0/meta/bases",
+                    headers={"Authorization": f"Bearer {settings.airtable_token}"},
+                    timeout=10,
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    bases = data.get("bases") or []
+                    ids = [b.get("id") for b in bases if b.get("id")]
+                    if ids:
+                        print(f"    Your token can access base IDs: {', '.join(ids)}")
+                        if settings.airtable_base_id not in ids:
+                            print(f"    Your .env has AIRTABLE_BASE_ID={settings.airtable_base_id}")
+                            print("    → That base is NOT in the list. In Airtable: Developer Hub → your token → add this base under Access.")
+                        else:
+                            print("    Your base ID is in the list → the table name may be wrong. Create a table named exactly 'Leads'.")
+                    else:
+                        print("    Your token has no bases in scope. Developer Hub → your token → add a base under Access.")
+                else:
+                    print("    1. Base ID: copy from Airtable URL (https://airtable.com/BASE_ID/...)")
+                    print("    2. Table name: exactly 'Leads' (or set AIRTABLE_TABLE_NAME in .env)")
+                    print("    3. Token: Developer Hub → your token → add this base under Access")
+            except Exception:
+                print("    1. Base ID: copy from Airtable URL (https://airtable.com/BASE_ID/...)")
+                print("    2. Table name: exactly 'Leads' (or set AIRTABLE_TABLE_NAME in .env)")
+                print("    3. Token: Developer Hub → your token → add this base under Access")
+        else:
+            print("  Check your AIRTABLE_TOKEN and AIRTABLE_BASE_ID in .env")
         return False
 
 
@@ -167,6 +251,10 @@ def test_email():
         print(f"  ✓ From: {settings.email_from}")
         print(f"  ✓ To: {settings.email_to}")
         print(f"  ✓ Recipients: {settings.email_recipients}")
+
+        # Multiple addresses must be comma-separated in EMAIL_TO
+        if "," not in settings.email_to and settings.email_to.count("@") > 1:
+            print("  ⚠ For multiple recipients, use commas in EMAIL_TO, e.g.: a@x.com, b@y.com")
 
         if 'your_' in settings.email_password or '_here' in settings.email_password:
             print("  ✗ EMAIL_PASSWORD not configured")
