@@ -1,46 +1,46 @@
-# Lead Scraper - Scheduled and manual runs
-# Runs at 6 AM and 6 PM UTC; can also be triggered manually.
+ # Lead Scraper - Scheduled and manual runs
+  # Runs at 6 AM and 6 PM UTC; can also be triggered manually.
 
-name: Scrape and Qualify Leads
+  name: Scrape and Qualify Leads
 
-on:
-  schedule:
-    - cron: '0 6 * * *'
-    - cron: '0 18 * * *'
-  workflow_dispatch:
+  on:
+    schedule:
+      - cron: '0 6 * * *'
+      - cron: '0 18 * * *'
+    workflow_dispatch:
 
-jobs:
-  scrape:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  jobs:
+    scrape:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.11'
+            cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade -r requirements.txt
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install --upgrade -r requirements.txt
 
-      - name: Run scraper
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-        run: python -m src.main
+        - name: Run scraper
+          env:
+            YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+            AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+            EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+            EMAIL_TO: ${{ secrets.EMAIL_TO }}
+            EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          run: python -m src.main
 
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: scraper-logs
-          path: logs/
-          retention-days: 30
+        - name: Upload logs
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: scraper-logs
+            path: logs/
+            retention-days: 30
