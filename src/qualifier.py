@@ -1,17 +1,20 @@
- """AI-powered lead qualification using OpenAI GPT-4o-mini."""
+"""
+AI-powered lead qualification using OpenAI GPT-4o-mini
+"""
 
-  import json
-  from typing import Dict, List
-  from openai import OpenAI
-  from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import json
+from typing import Dict, List
+from openai import OpenAI
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
-  from src.config import settings
-  from src.utils import setup_logger
+from src.config import settings
+from src.utils import setup_logger
 
-  logger = setup_logger(__name__)
+logger = setup_logger(__name__)
 
 
-  class LeadQualifier:
+
+class LeadQualifier:
       """Qualifies leads using OpenAI's GPT-4o-mini model."""
 
       SYSTEM_PROMPT = """You are a lead qualification specialist for Inner Engineering programs offered by Isha Foundation (founded by Sadhguru).
