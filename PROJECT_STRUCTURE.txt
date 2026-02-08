@@ -1,0 +1,291 @@
+Social Media Lead Scraping System
+==================================
+
+Project Root: /home/subodh/
+
+📁 Project Structure
+====================
+
+├── 📂 src/                           # Main application code
+│   ├── __init__.py                   # Package initialization
+│   ├── config.py                     # Configuration management (Pydantic)
+│   ├── utils.py                      # Logging and hash utilities
+│   ├── scraper.py                    # YouTube scraper with quota management
+│   ├── qualifier.py                  # AI lead qualification (GPT-4o-mini)
+│   ├── database.py                   # Airtable operations
+│   ├── notifier.py                   # Email digest sender
+│   └── main.py                       # Main orchestrator
+│
+├── 📂 .github/workflows/             # GitHub Actions
+│   └── scrape.yml                    # Automated scheduling (6 AM, 6 PM UTC)
+│
+├── 📂 logs/                          # Log files (auto-created)
+│   └── YYYYMMDD.log                  # Daily logs
+│
+├── 📄 .env.example                   # Environment variable template
+├── 📄 .gitignore                     # Git ignore rules
+├── 📄 requirements.txt               # Python dependencies
+├── 📄 setup.sh                       # Setup automation script
+├── 📄 test_setup.py                  # Pre-flight testing
+│
+└── 📚 Documentation
+    ├── README.md                     # Main documentation (450 lines)
+    ├── QUICKSTART.md                 # Quick setup guide
+    ├── TESTING.md                    # Testing guide (350 lines)
+    ├── PROJECT_SUMMARY.md            # Complete project overview (450 lines)
+    └── PROJECT_STRUCTURE.txt         # This file
+
+📊 Statistics
+=============
+
+Core Application Code:
+  - config.py:       60 lines
+  - utils.py:        60 lines
+  - scraper.py:     420 lines
+  - qualifier.py:   150 lines
+  - database.py:    180 lines
+  - notifier.py:    200 lines
+  - main.py:        180 lines
+  ─────────────────────────
+  Total:          1,250 lines
+
+Documentation:
+  - README.md:      450 lines
+  - TESTING.md:     350 lines
+  - PROJECT_SUMMARY: 450 lines
+  - QUICKSTART.md:  350 lines
+  ─────────────────────────
+  Total:          1,600 lines
+
+Infrastructure:
+  - scrape.yml:      45 lines
+  - setup.sh:        45 lines
+  - test_setup.py:  250 lines
+  ─────────────────────────
+  Total:            340 lines
+
+Project Total:    3,190 lines
+
+🎯 Key Features
+===============
+
+1. ✅ YouTube Scraper
+   - Channel discovery by search terms
+   - Recent video fetching (configurable days)
+   - Comment extraction with metadata
+   - Direct comment URL generation
+   - Real-time quota tracking (3,330/run)
+   - Exponential backoff retry
+
+2. ✅ AI Qualification
+   - GPT-4o-mini for cost efficiency
+   - Intent classification: High/Medium/Low
+   - Confidence scoring (0-100)
+   - Detailed reasoning
+   - Structured JSON output
+
+3. ✅ Duplicate Detection
+   - SHA-256 hash: username|platform|text
+   - Checks Airtable before AI (saves cost)
+   - Prevents reprocessing
+
+4. ✅ Airtable Storage
+   - 11 fields per lead
+   - Batch operations (10 records/request)
+   - Visual interface for manual review
+   - Direct comment links for easy access
+
+5. ✅ Email Digests
+   - HTML formatted
+   - Grouped by intent (High/Medium/Low)
+   - Summary statistics
+   - Direct links to comments and videos
+   - Error notifications
+
+6. ✅ GitHub Actions
+   - Automated scheduling (2x daily)
+   - Manual trigger capability
+   - Secure secret management
+   - Log artifacts (30-day retention)
+
+7. ✅ Error Handling
+   - Exponential backoff retries
+   - Graceful degradation
+   - Comprehensive logging
+   - Error notification emails
+
+🔧 Configuration
+================
+
+Environment Variables (.env):
+
+Required:
+  - YOUTUBE_API_KEY
+  - OPENAI_API_KEY
+  - AIRTABLE_TOKEN
+  - AIRTABLE_BASE_ID
+  - EMAIL_PASSWORD
+
+Configurable:
+  - SEARCH_TERMS (default: Sadhguru official,...)
+  - DAYS_BACK (default: 7)
+  - MAX_VIDEOS_PER_CHANNEL (default: 10)
+  - MAX_COMMENTS_PER_VIDEO (default: 100)
+  - YOUTUBE_QUOTA_LIMIT (default: 3330)
+  - MIN_SUBSCRIBER_COUNT (default: 100000)
+
+📈 Data Flow
+============
+
+1. GitHub Actions triggers (6 AM/6 PM UTC)
+   ↓
+2. Scraper discovers channels by search terms
+   ↓
+3. Fetches recent videos (last N days)
+   ↓
+4. Extracts comments with metadata
+   ↓
+5. Generates hash for duplicate detection
+   ↓
+6. Checks Airtable for existing hash
+   ↓
+7. Qualifies unique comments with GPT-4o-mini
+   ↓
+8. Stores qualified leads in Airtable
+   ↓
+9. Fetches leads from last 24 hours
+   ↓
+10. Sends HTML email digest
+
+💰 Cost Estimates
+=================
+
+Per Run (50 comments):
+  - YouTube API: $0 (within quota)
+  - OpenAI: ~$0.02
+  - Airtable: $0 (free tier)
+  - GitHub Actions: $0 (free tier)
+  - Email: $0 (Gmail)
+
+Monthly (60 runs):
+  - Total: $1-2/month
+
+🚀 Quick Start
+==============
+
+1. Run setup:
+   bash setup.sh
+
+2. Configure .env:
+   nano .env
+
+3. Test setup:
+   python test_setup.py
+
+4. Test run:
+   python -m src.main
+
+5. Push to GitHub:
+   git init && git add . && git commit -m "Initial commit"
+   git remote add origin <url> && git push
+
+6. Add GitHub secrets:
+   - YOUTUBE_API_KEY
+   - OPENAI_API_KEY
+   - AIRTABLE_TOKEN
+   - AIRTABLE_BASE_ID
+   - EMAIL_PASSWORD
+
+7. Enable GitHub Actions
+
+Total setup time: ~45-50 minutes
+
+✅ Testing
+==========
+
+Automated tests:
+  python test_setup.py
+
+Manual tests:
+  - Component testing (see TESTING.md)
+  - Scenario testing
+  - GitHub Actions testing
+
+Success indicators:
+  ✓ All tests pass
+  ✓ Leads in Airtable
+  ✓ Email digest received
+  ✓ Direct links work
+  ✓ Logs created
+
+📚 Documentation Files
+======================
+
+README.md
+  - Complete setup instructions
+  - API key prerequisites
+  - Configuration reference
+  - Troubleshooting guide
+  - System architecture
+
+QUICKSTART.md
+  - Step-by-step setup (< 1 hour)
+  - Prerequisites checklist
+  - Airtable schema setup
+  - GitHub Actions setup
+  - Verification steps
+
+TESTING.md
+  - Component testing
+  - Test scenarios
+  - Performance benchmarks
+  - Troubleshooting tests
+  - Success checklist
+
+PROJECT_SUMMARY.md
+  - Complete project overview
+  - What was built
+  - Key features
+  - Configuration options
+  - Data flow
+  - Cost analysis
+  - Next steps
+
+🎯 Success Metrics
+==================
+
+Target (12 weeks):
+  ✓ Automated 2x daily runs
+  □ 50+ leads per week
+  □ 30%+ high intent rate
+  □ 5-8 enrollments per week
+  □ <15 min/day review time
+  ✓ Low operating cost
+
+🛠️ Maintenance
+===============
+
+Daily: Review email digests (5-10 min)
+
+Weekly:
+  - Check Airtable for quality
+  - Adjust search terms if needed
+  - Monitor quota usage
+
+Monthly:
+  - Review AI accuracy
+  - Update prompts if needed
+  - Check cost vs budget
+  - Analyze conversion metrics
+
+📞 Support
+==========
+
+1. Check logs: logs/YYYYMMDD.log
+2. Run diagnostics: python test_setup.py
+3. Review README.md troubleshooting
+4. Check GitHub Actions logs
+5. Verify API keys and permissions
+
+Generated: 2026-02-08
+Version: 1.0.0
