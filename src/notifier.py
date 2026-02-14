@@ -24,7 +24,7 @@ class EmailNotifier:
 
     def _build_html_digest(self, leads: List[Dict]) -> str:
         """
-        Build HTML email content from leads.
+        Build HTML email content from leads (pain-based format).
 
         Args:
             leads: List of lead dictionaries
@@ -32,19 +32,15 @@ class EmailNotifier:
         Returns:
             HTML string
         """
-        # Group leads by intent
-        high_leads = [l for l in leads if l['fields'].get('Intent') == 'High']
-        medium_leads = [l for l in leads if l['fields'].get('Intent') == 'Medium']
-        low_leads = [l for l in leads if l['fields'].get('Intent') == 'Low']
+        # Group leads by intent_type (new format)
+        practice_aligned = [l for l in leads if l['fields'].get('Intent Type') == 'practice_aligned']
+        spiritual = [l for l in leads if l['fields'].get('Intent Type') == 'spiritual']
+        mental_pain = [l for l in leads if l['fields'].get('Intent Type') == 'mental_pain']
+        discipline = [l for l in leads if l['fields'].get('Intent Type') == 'discipline']
+        physical_pain = [l for l in leads if l['fields'].get('Intent Type') == 'physical_pain']
+        low_intent = [l for l in leads if l['fields'].get('Intent Type') == 'low_intent' or not l['fields'].get('Intent Type')]
 
         total = len(leads)
-        high_count = len(high_leads)
-        medium_count = len(medium_leads)
-        low_count = len(low_leads)
-
-        high_pct = (high_count / total * 100) if total > 0 else 0
-        medium_pct = (medium_count / total * 100) if total > 0 else 0
-        low_pct = (low_count / total * 100) if total > 0 else 0
 
         # Build HTML
         html = f"""
@@ -69,13 +65,18 @@ class EmailNotifier:
                     border-radius: 5px;
                     background-color: #fff;
                 }}
-                .high {{ border-left: 4px solid #ff6b6b; }}
-                .medium {{ border-left: 4px solid #ffa500; }}
-                .low {{ border-left: 4px solid #4CAF50; }}
+                .practice_aligned {{ border-left: 4px solid #8b0000; }}
+                .spiritual {{ border-left: 4px solid #9b59b6; }}
+                .mental_pain {{ border-left: 4px solid #e74c3c; }}
+                .discipline {{ border-left: 4px solid #f39c12; }}
+                .physical_pain {{ border-left: 4px solid #3498db; }}
+                .low {{ border-left: 4px solid #95a5a6; }}
                 .author {{ font-weight: bold; font-size: 16px; }}
-                .confidence {{ color: #666; font-size: 14px; }}
+                .metrics {{ color: #666; font-size: 14px; margin: 5px 0; }}
+                .metrics .badge {{ display: inline-block; padding: 2px 8px; margin-right: 10px; border-radius: 3px; background: #e0e0e0; }}
+                .practice {{ color: #8b0000; font-weight: bold; }}
                 .comment {{ margin: 10px 0; font-style: italic; }}
-                .reasoning {{ color: #555; font-size: 14px; background-color: #f9f9f9; padding: 10px; border-radius: 3px; }}
+                .reasoning {{ color: #555; font-size: 14px; background-color: #f9f9f9; padding: 10px; border-radius: 3px; margin-top: 10px; }}
                 .links {{ margin-top: 10px; }}
                 .links a {{ margin-right: 15px; color: #1a73e8; text-decoration: none; }}
                 .links a:hover {{ text-decoration: underline; }}
@@ -83,72 +84,92 @@ class EmailNotifier:
             </style>
         </head>
         <body>
-            <h1>🎯 Lead Digest - {datetime.now().strftime('%Y-%m-%d')}</h1>
+            <h1>🎯 Pain-Based Lead Digest - {datetime.now().strftime('%Y-%m-%d')}</h1>
 
             <div class="summary">
                 <h3>📊 Summary</h3>
                 <ul>
                     <li><strong>Total Leads:</strong> {total}</li>
-                    <li><strong>🔥 High Intent:</strong> {high_count} ({high_pct:.1f}%)</li>
-                    <li><strong>📌 Medium Intent:</strong> {medium_count} ({medium_pct:.1f}%)</li>
-                    <li><strong>📝 Low Intent:</strong> {low_count} ({low_pct:.1f}%)</li>
+                    <li><strong>🎯 Practice-Aligned:</strong> {len(practice_aligned)} (Highest Priority)</li>
+                    <li><strong>✨ Spiritual Longing:</strong> {len(spiritual)}</li>
+                    <li><strong>🧠 Mental/Emotional Pain:</strong> {len(mental_pain)}</li>
+                    <li><strong>🎯 Discipline Issues:</strong> {len(discipline)}</li>
+                    <li><strong>💪 Physical Pain:</strong> {len(physical_pain)}</li>
+                    <li><strong>📝 Low Intent:</strong> {len(low_intent)}</li>
                 </ul>
             </div>
         """
 
-        # High Intent Leads
-        if high_leads:
-            html += "<h2>🔥 High Intent Leads</h2>"
-            for lead in high_leads:
-                fields = lead['fields']
-                html += f"""
-                <div class="lead high">
-                    <div class="author">{fields.get('Name', 'Unknown')}</div>
-                    <div class="confidence">Confidence: {fields.get('Confidence', 0)}%</div>
-                    <div class="comment">"{fields.get('Comment', '')}"</div>
-                    <div class="reasoning"><strong>AI Reasoning:</strong> {fields.get('AI Reasoning', '')}</div>
-                    <div class="links">
-                        <a href="{fields.get('Comment URL', '')}" target="_blank">💬 View Comment</a>
-                        <a href="{fields.get('Video URL', '')}" target="_blank">🎥 Watch Video</a>
-                    </div>
-                </div>
-                """
+        # Helper function to build lead card
+        def build_lead_card(lead, css_class):
+            fields = lead['fields']
+            pain = fields.get('Pain Intensity', 0)
+            readiness = fields.get('Readiness Score', 0)
+            practice = fields.get('Practice Mention', '')
+            confidence = fields.get('Confidence', 0)
 
-        # Medium Intent Leads
-        if medium_leads:
-            html += "<h2>📌 Medium Intent Leads</h2>"
-            for lead in medium_leads:
-                fields = lead['fields']
-                html += f"""
-                <div class="lead medium">
-                    <div class="author">{fields.get('Name', 'Unknown')}</div>
-                    <div class="confidence">Confidence: {fields.get('Confidence', 0)}%</div>
-                    <div class="comment">"{fields.get('Comment', '')}"</div>
-                    <div class="reasoning"><strong>AI Reasoning:</strong> {fields.get('AI Reasoning', '')}</div>
-                    <div class="links">
-                        <a href="{fields.get('Comment URL', '')}" target="_blank">💬 View Comment</a>
-                        <a href="{fields.get('Video URL', '')}" target="_blank">🎥 Watch Video</a>
-                    </div>
-                </div>
-                """
+            practice_html = f'<div class="practice">🎯 Practice: {practice}</div>' if practice else ''
 
-        # Low Intent Leads (optional, can be collapsed)
-        if low_leads:
+            return f"""
+            <div class="lead {css_class}">
+                <div class="author">{fields.get('Name', 'Unknown')}</div>
+                <div class="metrics">
+                    <span class="badge">Pain: {pain}/10</span>
+                    <span class="badge">Readiness: {readiness}%</span>
+                    <span class="badge">Confidence: {confidence}%</span>
+                </div>
+                {practice_html}
+                <div class="comment">"{fields.get('Comment', '')}"</div>
+                <div class="reasoning"><strong>AI Analysis:</strong> {fields.get('AI Reasoning', '')}</div>
+                <div class="links">
+                    <a href="{fields.get('Comment URL', '')}" target="_blank">💬 View Comment</a>
+                    <a href="{fields.get('Video URL', '')}" target="_blank">🎥 Watch Video</a>
+                </div>
+            </div>
+            """
+
+        # Practice-Aligned Leads (HIGHEST PRIORITY)
+        if practice_aligned:
+            html += "<h2>🎯 Practice-Aligned Leads (Highest Priority)</h2>"
+            html += "<p><em>These people mentioned specific practices along with pain signals - ready to engage!</em></p>"
+            for lead in practice_aligned:
+                html += build_lead_card(lead, 'practice_aligned')
+
+        # Spiritual Longing Leads
+        if spiritual:
+            html += "<h2>✨ Spiritual Longing Leads</h2>"
+            html += "<p><em>Seeking transformation, purpose, or deeper meaning.</em></p>"
+            for lead in spiritual:
+                html += build_lead_card(lead, 'spiritual')
+
+        # Mental/Emotional Pain Leads
+        if mental_pain:
+            html += "<h2>🧠 Mental/Emotional Pain Leads</h2>"
+            html += "<p><em>Experiencing anxiety, stress, or mental struggles.</em></p>"
+            for lead in mental_pain:
+                html += build_lead_card(lead, 'mental_pain')
+
+        # Discipline Struggles Leads
+        if discipline:
+            html += "<h2>🎯 Discipline Struggles (Re-engagement Opportunity)</h2>"
+            html += "<p><em>Past practitioners who stopped or struggle with consistency.</em></p>"
+            for lead in discipline:
+                html += build_lead_card(lead, 'discipline')
+
+        # Physical Pain Leads
+        if physical_pain:
+            html += "<h2>💪 Physical Pain Leads</h2>"
+            html += "<p><em>Experiencing physical discomfort or health issues.</em></p>"
+            for lead in physical_pain:
+                html += build_lead_card(lead, 'physical_pain')
+
+        # Low Intent Leads (collapsed)
+        if low_intent:
             html += "<h2>📝 Low Intent Leads</h2>"
-            html += f"<p><em>{len(low_leads)} low intent leads captured for completeness.</em></p>"
+            html += f"<p><em>{len(low_intent)} low intent leads captured for completeness.</em></p>"
             html += "<details><summary>Click to expand</summary>"
-            for lead in low_leads:
-                fields = lead['fields']
-                html += f"""
-                <div class="lead low">
-                    <div class="author">{fields.get('Name', 'Unknown')}</div>
-                    <div class="confidence">Confidence: {fields.get('Confidence', 0)}%</div>
-                    <div class="comment">"{fields.get('Comment', '')}"</div>
-                    <div class="links">
-                        <a href="{fields.get('Comment URL', '')}" target="_blank">💬 View Comment</a>
-                    </div>
-                </div>
-                """
+            for lead in low_intent:
+                html += build_lead_card(lead, 'low')
             html += "</details>"
 
         html += """

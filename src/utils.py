@@ -5,6 +5,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 
 def setup_logger(name: str = "lead_scraper") -> logging.Logger:
@@ -65,3 +66,37 @@ def generate_lead_hash(username: str, platform: str, text: str) -> str:
     """
     unique_string = f"{username}|{platform}|{text}"
     return hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
+
+
+def detect_language(text: str) -> Optional[str]:
+    """
+    Detect comment language using langdetect library.
+
+    Args:
+        text: Comment text to analyze
+
+    Returns:
+        Language code ('en', 'hi', 'mr') if supported, None otherwise
+    """
+    try:
+        from langdetect import detect, LangDetectException
+
+        if not text or not text.strip():
+            return None
+
+        lang = detect(text)
+
+        # Only process English, Hindi, and Marathi
+        if lang in ['en', 'hi', 'mr']:
+            return lang
+
+        return None
+
+    except LangDetectException:
+        # Language detection failed (text too short, ambiguous, etc.)
+        return None
+    except ImportError:
+        # langdetect not installed - log warning and continue
+        logger = logging.getLogger(__name__)
+        logger.warning("langdetect library not installed. Skipping language detection.")
+        return 'en'  # Default to English if library not available

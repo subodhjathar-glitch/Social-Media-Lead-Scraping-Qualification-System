@@ -1,5 +1,6 @@
 """YouTube scraper for extracting comments from Sadhguru-related content."""
 
+import json
 import time
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
@@ -13,6 +14,21 @@ from src.utils import setup_logger
 logger = setup_logger(__name__)
 
 
+def _http_error_reason(e: HttpError) -> str:
+    """Extract reason from YouTube API 403/error response for clearer logging."""
+    try:
+        if getattr(e, 'content', None):
+            body = json.loads(e.content.decode('utf-8'))
+            err = body.get('error', {})
+            for item in err.get('errors', [{}]):
+                if item.get('reason'):
+                    return item['reason']
+            return err.get('message', str(e))
+    except Exception:
+        pass
+    return str(e)
+
+
 class YouTubeScraper:
     """Scrapes YouTube comments from Sadhguru-related channels."""
 
@@ -21,6 +37,7 @@ class YouTubeScraper:
         self.youtube = build('youtube', 'v3', developerKey=settings.youtube_api_key)
         self.quota_used = 0
         self.quota_limit = settings.youtube_quota_limit
+        self.channel_id_cache = {}  # Cache for channel handle -> ID mappings
 
     def _increment_quota(self, cost: int) -> bool:
         """
@@ -162,7 +179,8 @@ class YouTubeScraper:
 
         except HttpError as e:
             if e.resp.status == 403:
-                logger.error("Quota exceeded. Stopping video fetch.")
+                reason = _http_error_reason(e)
+                logger.error("Video fetch 403: %s. (If quotaExceeded: check Google Cloud Console → APIs → YouTube Data API v3 → Quotas; default 10,000 units/day.)", reason)
             elif e.resp.status in [500, 503]:
                 logger.warning(f"Server error fetching videos: {e}. Retrying...")
                 raise
@@ -225,7 +243,8 @@ class YouTubeScraper:
                 if 'commentsDisabled' in str(e):
                     logger.info(f"Comments disabled for video {video_id}")
                 else:
-                    logger.error("Quota exceeded. Stopping comment fetch.")
+                    reason = _http_error_reason(e)
+                    logger.error("Comment fetch 403: %s", reason)
             elif e.resp.status in [500, 503]:
                 logger.warning(f"Server error fetching comments: {e}. Retrying...")
                 raise
@@ -247,6 +266,125 @@ class YouTubeScraper:
             Direct URL to the comment
         """
         return f"https://www.youtube.com/watch?v={video_id}&lc={comment_id}"
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((HttpError,)),
+        reraise=True
+    )
+    def get_channel_id_from_handle(self, handle: str) -> Optional[str]:
+        """
+        Convert a channel handle (@username) to channel ID.
+
+        Args:
+            handle: Channel handle (e.g., '@sadhguru')
+
+        Returns:
+            Channel ID or None if not found
+        """
+        # Check cache first
+        if handle in self.channel_id_cache:
+            logger.debug(f"Using cached channel ID for {handle}")
+            return self.channel_id_cache[handle]
+
+        # Remove @ prefix if present
+        handle_clean = handle.lstrip('@')
+
+        try:
+            logger.info(f"Looking up channel ID for handle: {handle}")
+
+            # Use search API to resolve handle -> channel ID (forHandle not in this client version)
+            if not self._increment_quota(100):  # search.list costs 100 units
+                return None
+
+            response = self.youtube.search().list(
+                part='snippet',
+                q=handle_clean,
+                type='channel',
+                maxResults=1
+            ).execute()
+
+            if response.get('items'):
+                channel_id = response['items'][0]['id']['channelId']
+                logger.info(f"Found channel ID via search: {channel_id}")
+
+                # Cache the result
+                self.channel_id_cache[handle] = channel_id
+                return channel_id
+
+            logger.warning(f"Channel not found: {handle}")
+            return None
+
+        except HttpError as e:
+            if e.resp.status == 403:
+                reason = _http_error_reason(e)
+                logger.error("Channel lookup 403: %s. (If quotaExceeded: daily quota 10,000 units may be exhausted.)", reason)
+            else:
+                logger.error(f"Error looking up channel {handle}: {e}")
+            return None
+
+    def scrape_all_v2(self) -> List[Dict]:
+        """
+        Main orchestration method using hardcoded channels (no search).
+
+        Returns:
+            List of all scraped comments
+        """
+        all_comments = []
+
+        logger.info("Starting YouTube scrape (v2 - hardcoded channels)...")
+        logger.info(f"Target channels: {len(settings.target_channels_list)}")
+        logger.info(f"Days back: {settings.days_back}")
+        logger.info(f"Max videos per channel: {settings.max_videos_per_channel}")
+        logger.info(f"Max comments per video: {settings.max_comments_per_video}")
+
+        # Process each hardcoded channel
+        for i, handle in enumerate(settings.target_channels_list, 1):
+            if self.quota_used >= self.quota_limit:
+                logger.warning("Quota limit reached. Stopping scrape.")
+                break
+
+            logger.info(f"Processing channel {i}/{len(settings.target_channels_list)}: {handle}")
+
+            # Get channel ID from handle
+            channel_id = self.get_channel_id_from_handle(handle)
+
+            if not channel_id:
+                logger.warning(f"Skipping {handle} - could not resolve channel ID")
+                continue
+
+            # Get recent videos
+            videos = self.get_recent_videos(channel_id, settings.days_back)
+
+            if not videos:
+                logger.info(f"No recent videos found for {handle}")
+                continue
+
+            # Get comments from each video
+            for video in videos:
+                if self.quota_used >= self.quota_limit:
+                    break
+
+                comments = self.get_video_comments(
+                    video['id'],
+                    settings.max_comments_per_video
+                )
+
+                # Add channel and video metadata to each comment
+                for comment in comments:
+                    comment['channel_id'] = channel_id
+                    comment['channel_handle'] = handle
+                    comment['video_title'] = video['title']
+
+                all_comments.extend(comments)
+
+            logger.info(f"Channel {handle}: collected {len([c for c in all_comments if c.get('channel_handle') == handle])} comments")
+
+        logger.info(f"Scrape complete. Total comments: {len(all_comments)}")
+        logger.info(f"Final quota used: {self.quota_used}/{self.quota_limit}")
+
+        return all_comments
 
     def scrape_all(self) -> List[Dict]:
         """

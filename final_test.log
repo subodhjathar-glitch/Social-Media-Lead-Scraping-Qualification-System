@@ -1,0 +1,618 @@
+2026-02-14 11:46:31 - __main__ - INFO - ================================================================================
+2026-02-14 11:46:31 - __main__ - INFO - Starting lead scraping workflow at 2026-02-14 11:46:31 UTC
+2026-02-14 11:46:31 - __main__ - INFO - ================================================================================
+2026-02-14 11:46:31 - __main__ - INFO - Initializing components...
+2026-02-14 11:46:32 - src.database - INFO - ✓ Supabase client initialized and connected successfully
+2026-02-14 11:46:32 - __main__ - INFO - ✓ Supabase: Online and ready
+2026-02-14 11:46:32 - __main__ - INFO - 
+================================================================================
+2026-02-14 11:46:32 - __main__ - INFO - PHASE 1: Scraping YouTube Comments
+2026-02-14 11:46:32 - __main__ - INFO - ================================================================================
+2026-02-14 11:46:32 - src.scraper - INFO - Starting YouTube scrape (v2 - hardcoded channels)...
+2026-02-14 11:46:32 - src.scraper - INFO - Target channels: 16
+2026-02-14 11:46:32 - src.scraper - INFO - Days back: 7
+2026-02-14 11:46:32 - src.scraper - INFO - Max videos per channel: 10
+2026-02-14 11:46:32 - src.scraper - INFO - Max comments per video: 100
+2026-02-14 11:46:32 - src.scraper - INFO - Processing channel 1/16: @sadhguru
+2026-02-14 11:46:32 - src.scraper - INFO - Looking up channel ID for handle: @sadhguru
+2026-02-14 11:46:32 - src.scraper - INFO - Quota used: 100/3330
+2026-02-14 11:46:33 - src.scraper - INFO - Found channel ID via search: UCcYzLCs3zrQIBVHYA1sK2sw
+2026-02-14 11:46:33 - src.scraper - INFO - Quota used: 200/3330
+2026-02-14 11:46:33 - src.scraper - INFO - Fetching videos from channel UCcYzLCs3zrQIBVHYA1sK2sw (last 7 days)
+2026-02-14 11:46:33 - src.scraper - INFO - Found 10 recent videos
+2026-02-14 11:46:33 - src.scraper - INFO - Quota used: 201/3330
+2026-02-14 11:46:33 - src.scraper - INFO - Fetching comments from video rt6e2RdU5JY
+2026-02-14 11:46:33 - src.scraper - INFO - Fetched 6 comments from video rt6e2RdU5JY
+2026-02-14 11:46:33 - src.scraper - INFO - Quota used: 202/3330
+2026-02-14 11:46:33 - src.scraper - INFO - Fetching comments from video jnYlY2qPbOE
+2026-02-14 11:46:33 - src.scraper - INFO - Fetched 37 comments from video jnYlY2qPbOE
+2026-02-14 11:46:33 - src.scraper - INFO - Quota used: 203/3330
+2026-02-14 11:46:33 - src.scraper - INFO - Fetching comments from video 4JzY9M00Z70
+2026-02-14 11:46:34 - src.scraper - INFO - Fetched 63 comments from video 4JzY9M00Z70
+2026-02-14 11:46:34 - src.scraper - INFO - Quota used: 204/3330
+2026-02-14 11:46:34 - src.scraper - INFO - Fetching comments from video 8JSgvO-aKjk
+2026-02-14 11:46:34 - src.scraper - INFO - Fetched 39 comments from video 8JSgvO-aKjk
+2026-02-14 11:46:34 - src.scraper - INFO - Quota used: 205/3330
+2026-02-14 11:46:34 - src.scraper - INFO - Fetching comments from video 0X4oRnpDUCQ
+2026-02-14 11:46:34 - src.scraper - INFO - Fetched 10 comments from video 0X4oRnpDUCQ
+2026-02-14 11:46:34 - src.scraper - INFO - Quota used: 206/3330
+2026-02-14 11:46:34 - src.scraper - INFO - Fetching comments from video z6LiCSvnefA
+2026-02-14 11:46:34 - src.scraper - INFO - Fetched 62 comments from video z6LiCSvnefA
+2026-02-14 11:46:34 - src.scraper - INFO - Quota used: 207/3330
+2026-02-14 11:46:34 - src.scraper - INFO - Fetching comments from video S2bBYWtd3KM
+2026-02-14 11:46:34 - src.scraper - INFO - Fetched 27 comments from video S2bBYWtd3KM
+2026-02-14 11:46:34 - src.scraper - INFO - Quota used: 208/3330
+2026-02-14 11:46:34 - src.scraper - INFO - Fetching comments from video Co07uIIJ5LY
+2026-02-14 11:46:34 - src.scraper - INFO - Fetched 33 comments from video Co07uIIJ5LY
+2026-02-14 11:46:34 - src.scraper - INFO - Quota used: 209/3330
+2026-02-14 11:46:34 - src.scraper - INFO - Fetching comments from video 8vvk9aRLh_M
+2026-02-14 11:46:34 - src.scraper - INFO - Fetched 26 comments from video 8vvk9aRLh_M
+2026-02-14 11:46:34 - src.scraper - INFO - Quota used: 210/3330
+2026-02-14 11:46:34 - src.scraper - INFO - Fetching comments from video tGNwsoIvneY
+2026-02-14 11:46:35 - src.scraper - INFO - Fetched 24 comments from video tGNwsoIvneY
+2026-02-14 11:46:35 - src.scraper - INFO - Channel @sadhguru: collected 327 comments
+2026-02-14 11:46:35 - src.scraper - INFO - Processing channel 2/16: @ishafoundation
+2026-02-14 11:46:35 - src.scraper - INFO - Looking up channel ID for handle: @ishafoundation
+2026-02-14 11:46:35 - src.scraper - INFO - Quota used: 310/3330
+2026-02-14 11:46:35 - src.scraper - INFO - Found channel ID via search: UCgaiWfiix1zaQS6Mn5SIw2g
+2026-02-14 11:46:35 - src.scraper - INFO - Quota used: 410/3330
+2026-02-14 11:46:35 - src.scraper - INFO - Fetching videos from channel UCgaiWfiix1zaQS6Mn5SIw2g (last 7 days)
+2026-02-14 11:46:35 - src.scraper - INFO - Found 25 recent videos
+2026-02-14 11:46:35 - src.scraper - INFO - Quota used: 411/3330
+2026-02-14 11:46:35 - src.scraper - INFO - Fetching comments from video sArGfytw07A
+2026-02-14 11:46:35 - src.scraper - INFO - Fetched 2 comments from video sArGfytw07A
+2026-02-14 11:46:35 - src.scraper - INFO - Quota used: 412/3330
+2026-02-14 11:46:35 - src.scraper - INFO - Fetching comments from video N45Mi0Aa1Fk
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 6 comments from video N45Mi0Aa1Fk
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 413/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video qGuy8vNzWPk
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 0 comments from video qGuy8vNzWPk
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 414/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video RBbjhPqzmeA
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 5 comments from video RBbjhPqzmeA
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 415/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video 5TYWMiaEyy4
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 4 comments from video 5TYWMiaEyy4
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 416/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video R5ihc1ZQ_Yw
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 3 comments from video R5ihc1ZQ_Yw
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 417/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video TtBQdaq7jDE
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 4 comments from video TtBQdaq7jDE
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 418/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video WphJUr2UWb8
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 10 comments from video WphJUr2UWb8
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 419/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video _1t0aSquXw4
+2026-02-14 11:46:36 - src.scraper - INFO - Fetched 6 comments from video _1t0aSquXw4
+2026-02-14 11:46:36 - src.scraper - INFO - Quota used: 420/3330
+2026-02-14 11:46:36 - src.scraper - INFO - Fetching comments from video Vlota3ks-hY
+2026-02-14 11:46:37 - src.scraper - INFO - Fetched 30 comments from video Vlota3ks-hY
+2026-02-14 11:46:37 - src.scraper - INFO - Quota used: 421/3330
+2026-02-14 11:46:37 - src.scraper - INFO - Fetching comments from video tDZoCevpsFU
+2026-02-14 11:46:37 - src.scraper - INFO - Fetched 0 comments from video tDZoCevpsFU
+2026-02-14 11:46:37 - src.scraper - INFO - Quota used: 422/3330
+2026-02-14 11:46:37 - src.scraper - INFO - Fetching comments from video XFZfAIBgdSA
+2026-02-14 11:46:37 - src.scraper - INFO - Fetched 5 comments from video XFZfAIBgdSA
+2026-02-14 11:46:37 - src.scraper - INFO - Quota used: 423/3330
+2026-02-14 11:46:37 - src.scraper - INFO - Fetching comments from video QAOkyQaIHNQ
+2026-02-14 11:46:37 - src.scraper - INFO - Fetched 8 comments from video QAOkyQaIHNQ
+2026-02-14 11:46:37 - src.scraper - INFO - Quota used: 424/3330
+2026-02-14 11:46:37 - src.scraper - INFO - Fetching comments from video hkApnCiw7D4
+2026-02-14 11:46:37 - src.scraper - INFO - Fetched 4 comments from video hkApnCiw7D4
+2026-02-14 11:46:37 - src.scraper - INFO - Quota used: 425/3330
+2026-02-14 11:46:37 - src.scraper - INFO - Fetching comments from video JeidoS8qukI
+2026-02-14 11:46:37 - src.scraper - INFO - Fetched 3 comments from video JeidoS8qukI
+2026-02-14 11:46:37 - src.scraper - INFO - Quota used: 426/3330
+2026-02-14 11:46:37 - src.scraper - INFO - Fetching comments from video 6xRiTH26GzM
+2026-02-14 11:46:37 - src.scraper - INFO - Fetched 5 comments from video 6xRiTH26GzM
+2026-02-14 11:46:37 - src.scraper - INFO - Quota used: 427/3330
+2026-02-14 11:46:37 - src.scraper - INFO - Fetching comments from video PmmZiM3EFxs
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 27 comments from video PmmZiM3EFxs
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 428/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video 7YIj5-mjIpw
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 12 comments from video 7YIj5-mjIpw
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 429/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video KKL84RS26MQ
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 3 comments from video KKL84RS26MQ
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 430/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video LzTDp4wSChk
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 4 comments from video LzTDp4wSChk
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 431/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video m7n2Pt_9N4k
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 4 comments from video m7n2Pt_9N4k
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 432/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video G4is8RotisE
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 9 comments from video G4is8RotisE
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 433/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video ml1pkq3mIhI
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 2 comments from video ml1pkq3mIhI
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 434/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video xggSvCgKyXw
+2026-02-14 11:46:38 - src.scraper - INFO - Fetched 4 comments from video xggSvCgKyXw
+2026-02-14 11:46:38 - src.scraper - INFO - Quota used: 435/3330
+2026-02-14 11:46:38 - src.scraper - INFO - Fetching comments from video LVp-HoHfobg
+2026-02-14 11:46:39 - src.scraper - INFO - Fetched 4 comments from video LVp-HoHfobg
+2026-02-14 11:46:39 - src.scraper - INFO - Channel @ishafoundation: collected 164 comments
+2026-02-14 11:46:39 - src.scraper - INFO - Processing channel 3/16: @TheMysticWorld
+2026-02-14 11:46:39 - src.scraper - INFO - Looking up channel ID for handle: @TheMysticWorld
+2026-02-14 11:46:39 - src.scraper - INFO - Quota used: 535/3330
+2026-02-14 11:46:39 - src.scraper - INFO - Found channel ID via search: UCY3uee3H-t7uht8SQBA0xPQ
+2026-02-14 11:46:39 - src.scraper - INFO - Quota used: 635/3330
+2026-02-14 11:46:39 - src.scraper - INFO - Fetching videos from channel UCY3uee3H-t7uht8SQBA0xPQ (last 7 days)
+2026-02-14 11:46:39 - src.scraper - INFO - Found 9 recent videos
+2026-02-14 11:46:39 - src.scraper - INFO - Quota used: 636/3330
+2026-02-14 11:46:39 - src.scraper - INFO - Fetching comments from video kHXmUFQcJ1o
+2026-02-14 11:46:39 - src.scraper - INFO - Fetched 3 comments from video kHXmUFQcJ1o
+2026-02-14 11:46:39 - src.scraper - INFO - Quota used: 637/3330
+2026-02-14 11:46:39 - src.scraper - INFO - Fetching comments from video 0i5oLMezMJI
+2026-02-14 11:46:39 - src.scraper - INFO - Fetched 4 comments from video 0i5oLMezMJI
+2026-02-14 11:46:39 - src.scraper - INFO - Quota used: 638/3330
+2026-02-14 11:46:39 - src.scraper - INFO - Fetching comments from video fecL-P9iTb0
+2026-02-14 11:46:39 - src.scraper - INFO - Fetched 28 comments from video fecL-P9iTb0
+2026-02-14 11:46:39 - src.scraper - INFO - Quota used: 639/3330
+2026-02-14 11:46:39 - src.scraper - INFO - Fetching comments from video Z2wTSLmiZDM
+2026-02-14 11:46:39 - src.scraper - INFO - Fetched 5 comments from video Z2wTSLmiZDM
+2026-02-14 11:46:39 - src.scraper - INFO - Quota used: 640/3330
+2026-02-14 11:46:39 - src.scraper - INFO - Fetching comments from video qjGrpRiLius
+2026-02-14 11:46:40 - src.scraper - INFO - Fetched 3 comments from video qjGrpRiLius
+2026-02-14 11:46:40 - src.scraper - INFO - Quota used: 641/3330
+2026-02-14 11:46:40 - src.scraper - INFO - Fetching comments from video G_0WupUVlCo
+2026-02-14 11:46:40 - src.scraper - INFO - Fetched 9 comments from video G_0WupUVlCo
+2026-02-14 11:46:40 - src.scraper - INFO - Quota used: 642/3330
+2026-02-14 11:46:40 - src.scraper - INFO - Fetching comments from video qu_AzWscv44
+2026-02-14 11:46:40 - src.scraper - INFO - Fetched 24 comments from video qu_AzWscv44
+2026-02-14 11:46:40 - src.scraper - INFO - Quota used: 643/3330
+2026-02-14 11:46:40 - src.scraper - INFO - Fetching comments from video 3fTO1fAxiqc
+2026-02-14 11:46:40 - src.scraper - INFO - Fetched 12 comments from video 3fTO1fAxiqc
+2026-02-14 11:46:40 - src.scraper - INFO - Quota used: 644/3330
+2026-02-14 11:46:40 - src.scraper - INFO - Fetching comments from video wGJsXKd_Hk8
+2026-02-14 11:46:40 - src.scraper - INFO - Fetched 6 comments from video wGJsXKd_Hk8
+2026-02-14 11:46:40 - src.scraper - INFO - Channel @TheMysticWorld: collected 94 comments
+2026-02-14 11:46:40 - src.scraper - INFO - Processing channel 4/16: @TheWisdomofsages
+2026-02-14 11:46:40 - src.scraper - INFO - Looking up channel ID for handle: @TheWisdomofsages
+2026-02-14 11:46:40 - src.scraper - INFO - Quota used: 744/3330
+2026-02-14 11:46:41 - src.scraper - INFO - Found channel ID via search: UCgILMzspcEnTWE7FKaahaOg
+2026-02-14 11:46:41 - src.scraper - INFO - Quota used: 844/3330
+2026-02-14 11:46:41 - src.scraper - INFO - Fetching videos from channel UCgILMzspcEnTWE7FKaahaOg (last 7 days)
+2026-02-14 11:46:41 - src.scraper - INFO - Found 0 recent videos
+2026-02-14 11:46:41 - src.scraper - INFO - No recent videos found for @TheWisdomofsages
+2026-02-14 11:46:41 - src.scraper - INFO - Processing channel 5/16: @Mysticsofindia
+2026-02-14 11:46:41 - src.scraper - INFO - Looking up channel ID for handle: @Mysticsofindia
+2026-02-14 11:46:41 - src.scraper - INFO - Quota used: 944/3330
+2026-02-14 11:46:41 - src.scraper - INFO - Found channel ID via search: UCiWenv85Oxb2IvqxlGIhi4A
+2026-02-14 11:46:41 - src.scraper - INFO - Quota used: 1044/3330
+2026-02-14 11:46:41 - src.scraper - INFO - Fetching videos from channel UCiWenv85Oxb2IvqxlGIhi4A (last 7 days)
+2026-02-14 11:46:42 - src.scraper - INFO - Found 0 recent videos
+2026-02-14 11:46:42 - src.scraper - INFO - No recent videos found for @Mysticsofindia
+2026-02-14 11:46:42 - src.scraper - INFO - Processing channel 6/16: @Shemaroospirituallife
+2026-02-14 11:46:42 - src.scraper - INFO - Looking up channel ID for handle: @Shemaroospirituallife
+2026-02-14 11:46:42 - src.scraper - INFO - Quota used: 1144/3330
+2026-02-14 11:46:42 - src.scraper - INFO - Found channel ID via search: UC9Hk_VQd0p_3YlZmGkup36g
+2026-02-14 11:46:42 - src.scraper - INFO - Quota used: 1244/3330
+2026-02-14 11:46:42 - src.scraper - INFO - Fetching videos from channel UC9Hk_VQd0p_3YlZmGkup36g (last 7 days)
+2026-02-14 11:46:42 - src.scraper - INFO - Found 6 recent videos
+2026-02-14 11:46:42 - src.scraper - INFO - Quota used: 1245/3330
+2026-02-14 11:46:42 - src.scraper - INFO - Fetching comments from video pyY14RGnBBY
+2026-02-14 11:46:43 - src.scraper - INFO - Fetched 1 comments from video pyY14RGnBBY
+2026-02-14 11:46:43 - src.scraper - INFO - Quota used: 1246/3330
+2026-02-14 11:46:43 - src.scraper - INFO - Fetching comments from video 2gtBVezrPXs
+2026-02-14 11:46:43 - src.scraper - INFO - Fetched 1 comments from video 2gtBVezrPXs
+2026-02-14 11:46:43 - src.scraper - INFO - Quota used: 1247/3330
+2026-02-14 11:46:43 - src.scraper - INFO - Fetching comments from video qeFdoJgJM_I
+2026-02-14 11:46:43 - src.scraper - INFO - Fetched 1 comments from video qeFdoJgJM_I
+2026-02-14 11:46:43 - src.scraper - INFO - Quota used: 1248/3330
+2026-02-14 11:46:43 - src.scraper - INFO - Fetching comments from video t75yBkdm9y0
+2026-02-14 11:46:43 - src.scraper - INFO - Fetched 10 comments from video t75yBkdm9y0
+2026-02-14 11:46:43 - src.scraper - INFO - Quota used: 1249/3330
+2026-02-14 11:46:43 - src.scraper - INFO - Fetching comments from video SlHJnDDfYdA
+2026-02-14 11:46:43 - src.scraper - INFO - Fetched 0 comments from video SlHJnDDfYdA
+2026-02-14 11:46:43 - src.scraper - INFO - Quota used: 1250/3330
+2026-02-14 11:46:43 - src.scraper - INFO - Fetching comments from video DnxBmwSSctU
+2026-02-14 11:46:43 - src.scraper - INFO - Fetched 0 comments from video DnxBmwSSctU
+2026-02-14 11:46:43 - src.scraper - INFO - Channel @Shemaroospirituallife: collected 13 comments
+2026-02-14 11:46:43 - src.scraper - INFO - Processing channel 7/16: @UnofficialSadhguruChannel
+2026-02-14 11:46:43 - src.scraper - INFO - Looking up channel ID for handle: @UnofficialSadhguruChannel
+2026-02-14 11:46:43 - src.scraper - INFO - Quota used: 1350/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Found channel ID via search: UC8f_M_lyvvi04LEPgo-eUhw
+2026-02-14 11:46:44 - src.scraper - INFO - Quota used: 1450/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Fetching videos from channel UC8f_M_lyvvi04LEPgo-eUhw (last 7 days)
+2026-02-14 11:46:44 - src.scraper - INFO - Found 10 recent videos
+2026-02-14 11:46:44 - src.scraper - INFO - Quota used: 1451/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Fetching comments from video cmarS88qHC4
+2026-02-14 11:46:44 - src.scraper - INFO - Fetched 3 comments from video cmarS88qHC4
+2026-02-14 11:46:44 - src.scraper - INFO - Quota used: 1452/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Fetching comments from video gmZPvpvWLBY
+2026-02-14 11:46:44 - src.scraper - INFO - Fetched 5 comments from video gmZPvpvWLBY
+2026-02-14 11:46:44 - src.scraper - INFO - Quota used: 1453/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Fetching comments from video dyy2fzDudpI
+2026-02-14 11:46:44 - src.scraper - INFO - Fetched 1 comments from video dyy2fzDudpI
+2026-02-14 11:46:44 - src.scraper - INFO - Quota used: 1454/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Fetching comments from video 9OvdKyJvuzk
+2026-02-14 11:46:44 - src.scraper - INFO - Fetched 1 comments from video 9OvdKyJvuzk
+2026-02-14 11:46:44 - src.scraper - INFO - Quota used: 1455/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Fetching comments from video P6iT5SS34no
+2026-02-14 11:46:44 - src.scraper - INFO - Fetched 16 comments from video P6iT5SS34no
+2026-02-14 11:46:44 - src.scraper - INFO - Quota used: 1456/3330
+2026-02-14 11:46:44 - src.scraper - INFO - Fetching comments from video Y70EXDUggzQ
+2026-02-14 11:46:45 - src.scraper - INFO - Fetched 6 comments from video Y70EXDUggzQ
+2026-02-14 11:46:45 - src.scraper - INFO - Quota used: 1457/3330
+2026-02-14 11:46:45 - src.scraper - INFO - Fetching comments from video qUFvV0o4_Lk
+2026-02-14 11:46:45 - src.scraper - INFO - Fetched 4 comments from video qUFvV0o4_Lk
+2026-02-14 11:46:45 - src.scraper - INFO - Quota used: 1458/3330
+2026-02-14 11:46:45 - src.scraper - INFO - Fetching comments from video uIAAabZDasI
+2026-02-14 11:46:45 - src.scraper - INFO - Fetched 8 comments from video uIAAabZDasI
+2026-02-14 11:46:45 - src.scraper - INFO - Quota used: 1459/3330
+2026-02-14 11:46:45 - src.scraper - INFO - Fetching comments from video tvTZSLxKA2I
+2026-02-14 11:46:45 - src.scraper - INFO - Fetched 0 comments from video tvTZSLxKA2I
+2026-02-14 11:46:45 - src.scraper - INFO - Quota used: 1460/3330
+2026-02-14 11:46:45 - src.scraper - INFO - Fetching comments from video rtD5BXwYyTM
+2026-02-14 11:46:45 - src.scraper - INFO - Fetched 6 comments from video rtD5BXwYyTM
+2026-02-14 11:46:45 - src.scraper - INFO - Channel @UnofficialSadhguruChannel: collected 50 comments
+2026-02-14 11:46:45 - src.scraper - INFO - Processing channel 8/16: @simply.sadhguru
+2026-02-14 11:46:45 - src.scraper - INFO - Looking up channel ID for handle: @simply.sadhguru
+2026-02-14 11:46:45 - src.scraper - INFO - Quota used: 1560/3330
+2026-02-14 11:46:45 - src.scraper - INFO - Found channel ID via search: UCGFyOXubte-L9E6Q6sEIm3Q
+2026-02-14 11:46:45 - src.scraper - INFO - Quota used: 1660/3330
+2026-02-14 11:46:45 - src.scraper - INFO - Fetching videos from channel UCGFyOXubte-L9E6Q6sEIm3Q (last 7 days)
+2026-02-14 11:46:46 - src.scraper - INFO - Found 9 recent videos
+2026-02-14 11:46:46 - src.scraper - INFO - Quota used: 1661/3330
+2026-02-14 11:46:46 - src.scraper - INFO - Fetching comments from video qbBcp4f7OfA
+2026-02-14 11:46:46 - src.scraper - INFO - Fetched 12 comments from video qbBcp4f7OfA
+2026-02-14 11:46:46 - src.scraper - INFO - Quota used: 1662/3330
+2026-02-14 11:46:46 - src.scraper - INFO - Fetching comments from video jXqUhlnvz-s
+2026-02-14 11:46:46 - src.scraper - INFO - Fetched 5 comments from video jXqUhlnvz-s
+2026-02-14 11:46:46 - src.scraper - INFO - Quota used: 1663/3330
+2026-02-14 11:46:46 - src.scraper - INFO - Fetching comments from video awmAMEg--k0
+2026-02-14 11:46:46 - src.scraper - INFO - Fetched 1 comments from video awmAMEg--k0
+2026-02-14 11:46:46 - src.scraper - INFO - Quota used: 1664/3330
+2026-02-14 11:46:46 - src.scraper - INFO - Fetching comments from video efLH6uC7i90
+2026-02-14 11:46:46 - src.scraper - INFO - Fetched 3 comments from video efLH6uC7i90
+2026-02-14 11:46:46 - src.scraper - INFO - Quota used: 1665/3330
+2026-02-14 11:46:46 - src.scraper - INFO - Fetching comments from video v--grlgF-bU
+2026-02-14 11:46:46 - src.scraper - INFO - Fetched 6 comments from video v--grlgF-bU
+2026-02-14 11:46:46 - src.scraper - INFO - Quota used: 1666/3330
+2026-02-14 11:46:46 - src.scraper - INFO - Fetching comments from video UanIXmyKK70
+2026-02-14 11:46:46 - src.scraper - INFO - Fetched 0 comments from video UanIXmyKK70
+2026-02-14 11:46:46 - src.scraper - INFO - Quota used: 1667/3330
+2026-02-14 11:46:46 - src.scraper - INFO - Fetching comments from video ysT9zJM63us
+2026-02-14 11:46:47 - src.scraper - INFO - Fetched 61 comments from video ysT9zJM63us
+2026-02-14 11:46:47 - src.scraper - INFO - Quota used: 1668/3330
+2026-02-14 11:46:47 - src.scraper - INFO - Fetching comments from video -HFAq7IpGL4
+2026-02-14 11:46:47 - src.scraper - INFO - Fetched 38 comments from video -HFAq7IpGL4
+2026-02-14 11:46:47 - src.scraper - INFO - Quota used: 1669/3330
+2026-02-14 11:46:47 - src.scraper - INFO - Fetching comments from video Q_MRrdsPdNI
+2026-02-14 11:46:47 - src.scraper - INFO - Fetched 6 comments from video Q_MRrdsPdNI
+2026-02-14 11:46:47 - src.scraper - INFO - Channel @simply.sadhguru: collected 132 comments
+2026-02-14 11:46:47 - src.scraper - INFO - Processing channel 9/16: @Adiyogi1008
+2026-02-14 11:46:47 - src.scraper - INFO - Looking up channel ID for handle: @Adiyogi1008
+2026-02-14 11:46:47 - src.scraper - INFO - Quota used: 1769/3330
+2026-02-14 11:46:47 - src.scraper - INFO - Found channel ID via search: UCL__VWWvvLvZg5Tg4fZEs7g
+2026-02-14 11:46:47 - src.scraper - INFO - Quota used: 1869/3330
+2026-02-14 11:46:47 - src.scraper - INFO - Fetching videos from channel UCL__VWWvvLvZg5Tg4fZEs7g (last 7 days)
+2026-02-14 11:46:48 - src.scraper - INFO - Found 0 recent videos
+2026-02-14 11:46:48 - src.scraper - INFO - No recent videos found for @Adiyogi1008
+2026-02-14 11:46:48 - src.scraper - INFO - Processing channel 10/16: @this_is_last_time_sg
+2026-02-14 11:46:48 - src.scraper - INFO - Looking up channel ID for handle: @this_is_last_time_sg
+2026-02-14 11:46:48 - src.scraper - INFO - Quota used: 1969/3330
+2026-02-14 11:46:48 - src.scraper - INFO - Found channel ID via search: UCdgZCiFafI2vfibm7nqKoeQ
+2026-02-14 11:46:48 - src.scraper - INFO - Quota used: 2069/3330
+2026-02-14 11:46:48 - src.scraper - INFO - Fetching videos from channel UCdgZCiFafI2vfibm7nqKoeQ (last 7 days)
+2026-02-14 11:46:48 - src.scraper - INFO - Found 1 recent videos
+2026-02-14 11:46:48 - src.scraper - INFO - Quota used: 2070/3330
+2026-02-14 11:46:48 - src.scraper - INFO - Fetching comments from video aKaegNT3c1I
+2026-02-14 11:46:48 - src.scraper - INFO - Comments disabled for video aKaegNT3c1I
+2026-02-14 11:46:48 - src.scraper - INFO - Channel @this_is_last_time_sg: collected 0 comments
+2026-02-14 11:46:48 - src.scraper - INFO - Processing channel 11/16: @Spiritual1Seeker
+2026-02-14 11:46:48 - src.scraper - INFO - Looking up channel ID for handle: @Spiritual1Seeker
+2026-02-14 11:46:48 - src.scraper - INFO - Quota used: 2170/3330
+2026-02-14 11:46:49 - src.scraper - INFO - Found channel ID via search: UCyZGp8fColGUjsfXlv-_RPg
+2026-02-14 11:46:49 - src.scraper - INFO - Quota used: 2270/3330
+2026-02-14 11:46:49 - src.scraper - INFO - Fetching videos from channel UCyZGp8fColGUjsfXlv-_RPg (last 7 days)
+2026-02-14 11:46:49 - src.scraper - INFO - Found 2 recent videos
+2026-02-14 11:46:49 - src.scraper - INFO - Quota used: 2271/3330
+2026-02-14 11:46:49 - src.scraper - INFO - Fetching comments from video jpKTD7KBXrE
+2026-02-14 11:46:49 - src.scraper - INFO - Fetched 0 comments from video jpKTD7KBXrE
+2026-02-14 11:46:49 - src.scraper - INFO - Quota used: 2272/3330
+2026-02-14 11:46:49 - src.scraper - INFO - Fetching comments from video YuyXM3fLEMg
+2026-02-14 11:46:49 - src.scraper - INFO - Fetched 4 comments from video YuyXM3fLEMg
+2026-02-14 11:46:49 - src.scraper - INFO - Channel @Spiritual1Seeker: collected 4 comments
+2026-02-14 11:46:49 - src.scraper - INFO - Processing channel 12/16: @lifeinsights
+2026-02-14 11:46:49 - src.scraper - INFO - Looking up channel ID for handle: @lifeinsights
+2026-02-14 11:46:49 - src.scraper - INFO - Quota used: 2372/3330
+2026-02-14 11:46:50 - src.scraper - INFO - Found channel ID via search: UCa6yZvUTUPreiTh-33BjY5A
+2026-02-14 11:46:50 - src.scraper - INFO - Quota used: 2472/3330
+2026-02-14 11:46:50 - src.scraper - INFO - Fetching videos from channel UCa6yZvUTUPreiTh-33BjY5A (last 7 days)
+2026-02-14 11:46:50 - src.scraper - INFO - Found 2 recent videos
+2026-02-14 11:46:50 - src.scraper - INFO - Quota used: 2473/3330
+2026-02-14 11:46:50 - src.scraper - INFO - Fetching comments from video maLMnuNYfAo
+2026-02-14 11:46:50 - src.scraper - INFO - Fetched 38 comments from video maLMnuNYfAo
+2026-02-14 11:46:50 - src.scraper - INFO - Quota used: 2474/3330
+2026-02-14 11:46:50 - src.scraper - INFO - Fetching comments from video xzSGqEBIA_c
+2026-02-14 11:46:50 - src.scraper - INFO - Fetched 19 comments from video xzSGqEBIA_c
+2026-02-14 11:46:50 - src.scraper - INFO - Channel @lifeinsights: collected 57 comments
+2026-02-14 11:46:50 - src.scraper - INFO - Processing channel 13/16: @EnlightenedBySadhguru
+2026-02-14 11:46:50 - src.scraper - INFO - Looking up channel ID for handle: @EnlightenedBySadhguru
+2026-02-14 11:46:50 - src.scraper - INFO - Quota used: 2574/3330
+2026-02-14 11:46:51 - src.scraper - INFO - Found channel ID via search: UCbefNbM_4eXrrXQvI2qAVpQ
+2026-02-14 11:46:51 - src.scraper - INFO - Quota used: 2674/3330
+2026-02-14 11:46:51 - src.scraper - INFO - Fetching videos from channel UCbefNbM_4eXrrXQvI2qAVpQ (last 7 days)
+2026-02-14 11:46:51 - src.scraper - INFO - Found 0 recent videos
+2026-02-14 11:46:51 - src.scraper - INFO - No recent videos found for @EnlightenedBySadhguru
+2026-02-14 11:46:51 - src.scraper - INFO - Processing channel 14/16: @wisechoice_fanpage
+2026-02-14 11:46:51 - src.scraper - INFO - Looking up channel ID for handle: @wisechoice_fanpage
+2026-02-14 11:46:51 - src.scraper - INFO - Quota used: 2774/3330
+2026-02-14 11:46:51 - src.scraper - INFO - Found channel ID via search: UC6l3AUfE_CzB8Mca7D_hgRQ
+2026-02-14 11:46:51 - src.scraper - INFO - Quota used: 2874/3330
+2026-02-14 11:46:51 - src.scraper - INFO - Fetching videos from channel UC6l3AUfE_CzB8Mca7D_hgRQ (last 7 days)
+2026-02-14 11:46:52 - src.scraper - INFO - Found 1 recent videos
+2026-02-14 11:46:52 - src.scraper - INFO - Quota used: 2875/3330
+2026-02-14 11:46:52 - src.scraper - INFO - Fetching comments from video 5fsspk_CEN0
+2026-02-14 11:46:52 - src.scraper - INFO - Fetched 2 comments from video 5fsspk_CEN0
+2026-02-14 11:46:52 - src.scraper - INFO - Channel @wisechoice_fanpage: collected 2 comments
+2026-02-14 11:46:52 - src.scraper - INFO - Processing channel 15/16: @TheShivGuru
+2026-02-14 11:46:52 - src.scraper - INFO - Looking up channel ID for handle: @TheShivGuru
+2026-02-14 11:46:52 - src.scraper - INFO - Quota used: 2975/3330
+2026-02-14 11:46:52 - src.scraper - INFO - Found channel ID via search: UCsHieZ2JdSAbW7MyKejzlUg
+2026-02-14 11:46:52 - src.scraper - INFO - Quota used: 3075/3330
+2026-02-14 11:46:52 - src.scraper - INFO - Fetching videos from channel UCsHieZ2JdSAbW7MyKejzlUg (last 7 days)
+2026-02-14 11:46:53 - src.scraper - INFO - Found 0 recent videos
+2026-02-14 11:46:53 - src.scraper - INFO - No recent videos found for @TheShivGuru
+2026-02-14 11:46:53 - src.scraper - INFO - Processing channel 16/16: @Walking.Dhyanalinga
+2026-02-14 11:46:53 - src.scraper - INFO - Looking up channel ID for handle: @Walking.Dhyanalinga
+2026-02-14 11:46:53 - src.scraper - INFO - Quota used: 3175/3330
+2026-02-14 11:46:53 - src.scraper - INFO - Found channel ID via search: UCbLKy8mcjYNfN4w3NPFqBfg
+2026-02-14 11:46:53 - src.scraper - INFO - Quota used: 3275/3330
+2026-02-14 11:46:53 - src.scraper - INFO - Fetching videos from channel UCbLKy8mcjYNfN4w3NPFqBfg (last 7 days)
+2026-02-14 11:46:53 - src.scraper - INFO - Found 0 recent videos
+2026-02-14 11:46:53 - src.scraper - INFO - No recent videos found for @Walking.Dhyanalinga
+2026-02-14 11:46:53 - src.scraper - INFO - Scrape complete. Total comments: 843
+2026-02-14 11:46:53 - src.scraper - INFO - Final quota used: 3275/3330
+2026-02-14 11:46:53 - __main__ - INFO - ✓ Scraped 843 comments
+2026-02-14 11:46:53 - __main__ - INFO - 
+================================================================================
+2026-02-14 11:46:53 - __main__ - INFO - PHASE 1.5: Language Filtering
+2026-02-14 11:46:53 - __main__ - INFO - ================================================================================
+2026-02-14 11:46:56 - __main__ - INFO - ✓ Language filter: 257/843 passed
+2026-02-14 11:46:56 - __main__ - INFO -   Skipped 586 non-English/Hindi/Marathi comments
+2026-02-14 11:46:56 - __main__ - INFO - 
+================================================================================
+2026-02-14 11:46:56 - __main__ - INFO - PHASE 1.6: Pre-Filtering Low-Quality Comments
+2026-02-14 11:46:56 - __main__ - INFO - ================================================================================
+2026-02-14 11:46:56 - src.prefilter - INFO - Pre-filter results: 86/257 passed (33.5%)
+2026-02-14 11:46:56 - src.prefilter - INFO -   Skipped - too_short: 41, emoji_only: 0, praise_only: 0, no_meaningful_content: 130, empty: 0
+2026-02-14 11:46:56 - __main__ - INFO - ✓ Pre-filter: 86/257 passed (66.5% cost reduction)
+2026-02-14 11:46:56 - __main__ - INFO - 
+================================================================================
+2026-02-14 11:46:56 - __main__ - INFO - PHASE 2: Filtering Duplicates
+2026-02-14 11:46:56 - __main__ - INFO - ================================================================================
+2026-02-14 11:46:56 - src.database - INFO - Processing 86 comments for duplicates
+2026-02-14 11:47:24 - src.database - INFO - Unique: 86, Duplicates: 0
+2026-02-14 11:47:24 - __main__ - INFO - ✓ Unique: 86, Duplicates: 0
+2026-02-14 11:47:24 - __main__ - INFO - 
+================================================================================
+2026-02-14 11:47:24 - __main__ - INFO - PHASE 2.5: Keyword Detection
+2026-02-14 11:47:24 - __main__ - INFO - ================================================================================
+2026-02-14 11:47:24 - src.keywords - INFO - Running keyword detection on 86 comments
+2026-02-14 11:47:24 - src.keywords - INFO - Keyword detection complete: Practice mentions=13, Spiritual=9, Mental=16
+2026-02-14 11:47:24 - __main__ - INFO - ✓ Keyword detection complete for 86 comments
+2026-02-14 11:47:24 - __main__ - INFO - 
+================================================================================
+2026-02-14 11:47:24 - __main__ - INFO - PHASE 3: AI Lead Qualification
+2026-02-14 11:47:24 - __main__ - INFO - ================================================================================
+2026-02-14 11:47:24 - src.qualifier - INFO - Starting batch qualification of 86 comments
+2026-02-14 11:47:24 - src.qualifier - INFO - Processing comment 1/86
+2026-02-14 11:47:24 - src.qualifier - INFO - Qualifying comment from @journal-b9x
+2026-02-14 11:47:26 - src.qualifier - INFO - Qualified as spiritual (pain: 7/10, readiness: 75%)
+2026-02-14 11:47:26 - src.qualifier - INFO - Processing comment 2/86
+2026-02-14 11:47:26 - src.qualifier - INFO - Qualifying comment from @prachichawla6994
+2026-02-14 11:47:28 - src.qualifier - INFO - Qualified as low_intent (pain: 4/10, readiness: 30%)
+2026-02-14 11:47:28 - src.qualifier - INFO - Processing comment 3/86
+2026-02-14 11:47:28 - src.qualifier - INFO - Qualifying comment from @Vikashkumarsingh09
+2026-02-14 11:47:30 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:30 - src.qualifier - INFO - Processing comment 4/86
+2026-02-14 11:47:30 - src.qualifier - INFO - Qualifying comment from @tsangkartsangkar3904
+2026-02-14 11:47:32 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:32 - src.qualifier - INFO - Processing comment 5/86
+2026-02-14 11:47:32 - src.qualifier - INFO - Qualifying comment from @321-y1o
+2026-02-14 11:47:34 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:34 - src.qualifier - INFO - Processing comment 6/86
+2026-02-14 11:47:34 - src.qualifier - INFO - Qualifying comment from @booky6149
+2026-02-14 11:47:35 - src.qualifier - INFO - Qualified as spiritual (pain: 4/10, readiness: 50%)
+2026-02-14 11:47:35 - src.qualifier - INFO - Processing comment 7/86
+2026-02-14 11:47:35 - src.qualifier - INFO - Qualifying comment from @Pfire1
+2026-02-14 11:47:37 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:37 - src.qualifier - INFO - Processing comment 8/86
+2026-02-14 11:47:37 - src.qualifier - INFO - Qualifying comment from @mouni.thejasvi
+2026-02-14 11:47:39 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:39 - src.qualifier - INFO - Processing comment 9/86
+2026-02-14 11:47:39 - src.qualifier - INFO - Qualifying comment from @amritapatil7405
+2026-02-14 11:47:41 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:47:41 - src.qualifier - INFO - Processing comment 10/86
+2026-02-14 11:47:41 - src.qualifier - INFO - Qualifying comment from @amritapatil7405
+2026-02-14 11:47:43 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:43 - src.qualifier - INFO - Processing comment 11/86
+2026-02-14 11:47:43 - src.qualifier - INFO - Qualifying comment from @sreekanthchamarthi6079
+2026-02-14 11:47:44 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:47:44 - src.qualifier - INFO - Processing comment 12/86
+2026-02-14 11:47:44 - src.qualifier - INFO - Qualifying comment from @jamesobrien1916
+2026-02-14 11:47:46 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:46 - src.qualifier - INFO - Processing comment 13/86
+2026-02-14 11:47:46 - src.qualifier - INFO - Qualifying comment from @nilaypatil4721
+2026-02-14 11:47:47 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:47 - src.qualifier - INFO - Processing comment 14/86
+2026-02-14 11:47:47 - src.qualifier - INFO - Qualifying comment from @tsvetelinpavlov2786
+2026-02-14 11:47:49 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:49 - src.qualifier - INFO - Processing comment 15/86
+2026-02-14 11:47:49 - src.qualifier - INFO - Qualifying comment from @Vishnulyf
+2026-02-14 11:47:52 - src.qualifier - INFO - Qualified as low_intent (pain: 2/10, readiness: 20%)
+2026-02-14 11:47:52 - src.qualifier - INFO - Processing comment 16/86
+2026-02-14 11:47:52 - src.qualifier - INFO - Qualifying comment from @anuraagnath8866
+2026-02-14 11:47:54 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:54 - src.qualifier - INFO - Processing comment 17/86
+2026-02-14 11:47:54 - src.qualifier - INFO - Qualifying comment from @rajatx1111
+2026-02-14 11:47:56 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:56 - src.qualifier - INFO - Processing comment 18/86
+2026-02-14 11:47:56 - src.qualifier - INFO - Qualifying comment from @MichelineGingras
+2026-02-14 11:47:57 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:57 - src.qualifier - INFO - Processing comment 19/86
+2026-02-14 11:47:57 - src.qualifier - INFO - Qualifying comment from @akhilendrasingh6987
+2026-02-14 11:47:59 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:47:59 - src.qualifier - INFO - Processing comment 20/86
+2026-02-14 11:47:59 - src.qualifier - INFO - Qualifying comment from @ChristoWright
+2026-02-14 11:48:00 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:00 - src.qualifier - INFO - Processing comment 21/86
+2026-02-14 11:48:00 - src.qualifier - INFO - Qualifying comment from @anandakumarsg9655
+2026-02-14 11:48:02 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:02 - src.qualifier - INFO - Processing comment 22/86
+2026-02-14 11:48:02 - src.qualifier - INFO - Qualifying comment from @periyasamyrasu2699
+2026-02-14 11:48:04 - src.qualifier - INFO - Qualified as mental_pain (pain: 7/10, readiness: 75%)
+2026-02-14 11:48:04 - src.qualifier - INFO - Processing comment 23/86
+2026-02-14 11:48:04 - src.qualifier - INFO - Qualifying comment from @periyasamyrasu2699
+2026-02-14 11:48:05 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:05 - src.qualifier - INFO - Processing comment 24/86
+2026-02-14 11:48:05 - src.qualifier - INFO - Qualifying comment from @carloj-g6001
+2026-02-14 11:48:07 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:07 - src.qualifier - INFO - Processing comment 25/86
+2026-02-14 11:48:07 - src.qualifier - INFO - Qualifying comment from @Vikashkumarsingh09
+2026-02-14 11:48:09 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:09 - src.qualifier - INFO - Processing comment 26/86
+2026-02-14 11:48:09 - src.qualifier - INFO - Qualifying comment from @yvonneschwartz3929
+2026-02-14 11:48:11 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:11 - src.qualifier - INFO - Processing comment 27/86
+2026-02-14 11:48:11 - src.qualifier - INFO - Qualifying comment from @nikhilgokhale5459
+2026-02-14 11:48:14 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:14 - src.qualifier - INFO - Processing comment 28/86
+2026-02-14 11:48:14 - src.qualifier - INFO - Qualifying comment from @Vikashkumarsingh09
+2026-02-14 11:48:15 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:15 - src.qualifier - INFO - Processing comment 29/86
+2026-02-14 11:48:15 - src.qualifier - INFO - Qualifying comment from @mjrd-r2d
+2026-02-14 11:48:17 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:48:17 - src.qualifier - INFO - Processing comment 30/86
+2026-02-14 11:48:17 - src.qualifier - INFO - Qualifying comment from @soumyaranjansahu3570
+2026-02-14 11:48:18 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:18 - src.qualifier - INFO - Processing comment 31/86
+2026-02-14 11:48:18 - src.qualifier - INFO - Qualifying comment from @kasinathannadesan5524
+2026-02-14 11:48:20 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:20 - src.qualifier - INFO - Processing comment 32/86
+2026-02-14 11:48:20 - src.qualifier - INFO - Qualifying comment from @357fortknox6
+2026-02-14 11:48:22 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:22 - src.qualifier - INFO - Processing comment 33/86
+2026-02-14 11:48:22 - src.qualifier - INFO - Qualifying comment from @AF-uc2bd
+2026-02-14 11:48:23 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:23 - src.qualifier - INFO - Processing comment 34/86
+2026-02-14 11:48:23 - src.qualifier - INFO - Qualifying comment from @ivanapekarovicova5438
+2026-02-14 11:48:25 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:25 - src.qualifier - INFO - Processing comment 35/86
+2026-02-14 11:48:25 - src.qualifier - INFO - Qualifying comment from @NewJulietaCARLOS
+2026-02-14 11:48:27 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:27 - src.qualifier - INFO - Processing comment 36/86
+2026-02-14 11:48:27 - src.qualifier - INFO - Qualifying comment from @TurtleInTheSnow
+2026-02-14 11:48:29 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:48:29 - src.qualifier - INFO - Processing comment 37/86
+2026-02-14 11:48:29 - src.qualifier - INFO - Qualifying comment from @cristina6427
+2026-02-14 11:48:30 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:30 - src.qualifier - INFO - Processing comment 38/86
+2026-02-14 11:48:30 - src.qualifier - INFO - Qualifying comment from @ganeshmahajan1985
+2026-02-14 11:48:31 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:48:31 - src.qualifier - INFO - Processing comment 39/86
+2026-02-14 11:48:31 - src.qualifier - INFO - Qualifying comment from @atalsatya
+2026-02-14 11:48:34 - src.qualifier - INFO - Qualified as spiritual (pain: 5/10, readiness: 70%)
+2026-02-14 11:48:34 - src.qualifier - INFO - Processing comment 40/86
+2026-02-14 11:48:34 - src.qualifier - INFO - Qualifying comment from @aninditamondal-t2n
+2026-02-14 11:48:35 - src.qualifier - INFO - Qualified as low_intent (pain: 1/10, readiness: 10%)
+2026-02-14 11:48:35 - src.qualifier - INFO - Processing comment 41/86
+2026-02-14 11:48:35 - src.qualifier - INFO - Qualifying comment from @shampamondal1814
+2026-02-14 11:48:37 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:37 - src.qualifier - INFO - Processing comment 42/86
+2026-02-14 11:48:37 - src.qualifier - INFO - Qualifying comment from @sourabhacharekararts
+2026-02-14 11:48:38 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:38 - src.qualifier - INFO - Processing comment 43/86
+2026-02-14 11:48:38 - src.qualifier - INFO - Qualifying comment from @sahithiputtapaka
+2026-02-14 11:48:40 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:40 - src.qualifier - INFO - Processing comment 44/86
+2026-02-14 11:48:40 - src.qualifier - INFO - Qualifying comment from @surakshav5553
+2026-02-14 11:48:42 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:42 - src.qualifier - INFO - Processing comment 45/86
+2026-02-14 11:48:42 - src.qualifier - INFO - Qualifying comment from @rootcause-life
+2026-02-14 11:48:43 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:43 - src.qualifier - INFO - Processing comment 46/86
+2026-02-14 11:48:43 - src.qualifier - INFO - Qualifying comment from @Um_its_Lex
+2026-02-14 11:48:45 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:45 - src.qualifier - INFO - Processing comment 47/86
+2026-02-14 11:48:45 - src.qualifier - INFO - Qualifying comment from @vitrickmartinez7115
+2026-02-14 11:48:47 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:47 - src.qualifier - INFO - Processing comment 48/86
+2026-02-14 11:48:47 - src.qualifier - INFO - Qualifying comment from @Blackwater_Monster
+2026-02-14 11:48:48 - src.qualifier - INFO - Qualified as low_intent (pain: 2/10, readiness: 20%)
+2026-02-14 11:48:48 - src.qualifier - INFO - Processing comment 49/86
+2026-02-14 11:48:48 - src.qualifier - INFO - Qualifying comment from @roopas8477
+2026-02-14 11:48:51 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:51 - src.qualifier - INFO - Processing comment 50/86
+2026-02-14 11:48:51 - src.qualifier - INFO - Qualifying comment from @VinaySachu-x7q5u
+2026-02-14 11:48:53 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:53 - src.qualifier - INFO - Processing comment 51/86
+2026-02-14 11:48:53 - src.qualifier - INFO - Qualifying comment from @bagelbonz
+2026-02-14 11:48:55 - src.qualifier - INFO - Qualified as low_intent (pain: 4/10, readiness: 30%)
+2026-02-14 11:48:55 - src.qualifier - INFO - Processing comment 52/86
+2026-02-14 11:48:55 - src.qualifier - INFO - Qualifying comment from @danielsolomon1710
+2026-02-14 11:48:56 - src.qualifier - INFO - Qualified as low_intent (pain: 4/10, readiness: 20%)
+2026-02-14 11:48:56 - src.qualifier - INFO - Processing comment 53/86
+2026-02-14 11:48:56 - src.qualifier - INFO - Qualifying comment from @Jani-eye1981
+2026-02-14 11:48:58 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:48:58 - src.qualifier - INFO - Processing comment 54/86
+2026-02-14 11:48:58 - src.qualifier - INFO - Qualifying comment from @JPatelLive
+2026-02-14 11:49:00 - src.qualifier - INFO - Qualified as spiritual (pain: 7/10, readiness: 75%)
+2026-02-14 11:49:00 - src.qualifier - INFO - Processing comment 55/86
+2026-02-14 11:49:00 - src.qualifier - INFO - Qualifying comment from @musicyog1984
+2026-02-14 11:49:02 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:49:02 - src.qualifier - INFO - Processing comment 56/86
+2026-02-14 11:49:02 - src.qualifier - INFO - Qualifying comment from @realestate360tours
+2026-02-14 11:49:03 - src.qualifier - INFO - Qualified as discipline (pain: 2/10, readiness: 30%)
+2026-02-14 11:49:03 - src.qualifier - INFO - Processing comment 57/86
+2026-02-14 11:49:03 - src.qualifier - INFO - Qualifying comment from @fionaquinn8777
+2026-02-14 11:49:05 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:49:05 - src.qualifier - INFO - Processing comment 58/86
+2026-02-14 11:49:05 - src.qualifier - INFO - Qualifying comment from @zoricamastrovic3914
+2026-02-14 11:49:07 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:49:07 - src.qualifier - INFO - Processing comment 59/86
+2026-02-14 11:49:07 - src.qualifier - INFO - Qualifying comment from @empthead
+2026-02-14 11:49:08 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:49:08 - src.qualifier - INFO - Processing comment 60/86
+2026-02-14 11:49:08 - src.qualifier - INFO - Qualifying comment from @RealityChick-Child-ō-Christ
+2026-02-14 11:49:10 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 5%)
+2026-02-14 11:49:10 - src.qualifier - INFO - Processing comment 61/86
+2026-02-14 11:49:10 - src.qualifier - INFO - Qualifying comment from @roopanrs2769
+2026-02-14 11:49:11 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:49:11 - src.qualifier - INFO - Processing comment 62/86
+2026-02-14 11:49:11 - src.qualifier - INFO - Qualifying comment from @borisnahalka2307
+2026-02-14 11:49:13 - src.qualifier - INFO - Qualified as spiritual (pain: 5/10, readiness: 65%)
+2026-02-14 11:49:13 - src.qualifier - INFO - Processing comment 63/86
+2026-02-14 11:49:13 - src.qualifier - INFO - Qualifying comment from @arminhurt6906
+2026-02-14 11:49:15 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:49:15 - src.qualifier - INFO - Processing comment 64/86
+2026-02-14 11:49:15 - src.qualifier - INFO - Qualifying comment from @btechbabu6999
+2026-02-14 11:49:17 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:49:17 - src.qualifier - INFO - Processing comment 65/86
+2026-02-14 11:49:17 - src.qualifier - INFO - Qualifying comment from @williamtwombly8322
+2026-02-14 11:49:18 - src.qualifier - INFO - Qualified as spiritual (pain: 6/10, readiness: 75%)
+2026-02-14 11:49:18 - src.qualifier - INFO - Processing comment 66/86
+2026-02-14 11:49:18 - src.qualifier - INFO - Qualifying comment from @fishermans1friend
+2026-02-14 11:49:20 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:49:20 - src.qualifier - INFO - Processing comment 67/86
+2026-02-14 11:49:20 - src.qualifier - INFO - Qualifying comment from @williamtwombly8322
+2026-02-14 11:49:22 - src.qualifier - INFO - Qualified as low_intent (pain: 2/10, readiness: 20%)
+2026-02-14 11:49:22 - src.qualifier - INFO - Processing comment 68/86
+2026-02-14 11:49:22 - src.qualifier - INFO - Qualifying comment from @Parasatchitananda
+2026-02-14 11:49:23 - src.qualifier - INFO - Qualified as mental_pain (pain: 9/10, readiness: 85%)
+2026-02-14 11:49:23 - src.qualifier - INFO - Processing comment 69/86
+2026-02-14 11:49:23 - src.qualifier - INFO - Qualifying comment from @NotSoACHARYA
+2026-02-14 11:49:25 - src.qualifier - INFO - Qualified as low_intent (pain: 0/10, readiness: 10%)
+2026-02-14 11:49:25 - src.qualifier - INFO - Processing comment 70/86
+2026-02-14 11:49:25 - src.qualifier - INFO - Qualifying comment from @blackflag298
+2026-02-14 11:49:26 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:49:26 - src.qualifier - INFO - Processing comment 71/86
+2026-02-14 11:49:26 - src.qualifier - INFO - Qualifying comment from @Hussainzidane
+2026-02-14 11:49:29 - src.qualifier - INFO - Qualified as low_intent (pain: 3/10, readiness: 20%)
+2026-02-14 11:49:29 - src.qualifier - INFO - Processing comment 72/86
+2026-02-14 11:49:29 - src.qualifier - INFO - Qualifying comment from @indranieroopnaraine3766

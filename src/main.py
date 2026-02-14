@@ -9,7 +9,9 @@ from src.scraper import YouTubeScraper
 from src.qualifier import LeadQualifier
 from src.database import AirtableDatabase
 from src.notifier import EmailNotifier
-from src.utils import setup_logger
+from src.prefilter import CommentPreFilter
+from src.keywords import KeywordDetector
+from src.utils import setup_logger, detect_language
 
 logger = setup_logger(__name__)
 
@@ -23,11 +25,19 @@ def main():
 
     metrics = {
         'scraped': 0,
+        'skipped_by_language': 0,
+        'skipped_by_prefilter': 0,
+        'passed_prefilter': 0,
         'duplicates': 0,
         'unique': 0,
         'high_intent': 0,
         'medium_intent': 0,
         'low_intent': 0,
+        'spiritual': 0,
+        'mental_pain': 0,
+        'discipline': 0,
+        'physical_pain': 0,
+        'practice_aligned': 0,
         'stored': 0,
         'errors': []
     }
@@ -36,16 +46,24 @@ def main():
         # Initialize components
         logger.info("Initializing components...")
         scraper = YouTubeScraper()
+        prefilter = CommentPreFilter()
+        keyword_detector = KeywordDetector()
         qualifier = LeadQualifier()
         database = AirtableDatabase()
         notifier = EmailNotifier()
+
+        # Check database status
+        if database.is_available:
+            logger.info("✓ Supabase: Online and ready")
+        else:
+            logger.warning("⚠ Supabase: Offline - leads will be saved locally to data/ folder")
 
         # Phase 1: Scrape YouTube comments
         logger.info("\n" + "=" * 80)
         logger.info("PHASE 1: Scraping YouTube Comments")
         logger.info("=" * 80)
         try:
-            comments = scraper.scrape_all()
+            comments = scraper.scrape_all_v2()  # Use new hardcoded channel method
             metrics['scraped'] = len(comments)
             logger.info(f"✓ Scraped {metrics['scraped']} comments")
         except Exception as e:
@@ -56,6 +74,57 @@ def main():
 
         if not comments:
             logger.warning("No comments scraped. Exiting workflow.")
+            return metrics
+
+        # Phase 1.5: Language filtering
+        logger.info("\n" + "=" * 80)
+        logger.info("PHASE 1.5: Language Filtering")
+        logger.info("=" * 80)
+        try:
+            language_filtered = []
+            for comment in comments:
+                lang = detect_language(comment.get('text', ''))
+                comment['language'] = lang
+
+                if lang in ['en', 'hi', 'mr']:
+                    language_filtered.append(comment)
+                else:
+                    metrics['skipped_by_language'] += 1
+
+            logger.info(f"✓ Language filter: {len(language_filtered)}/{len(comments)} passed")
+            logger.info(f"  Skipped {metrics['skipped_by_language']} non-English/Hindi/Marathi comments")
+            comments = language_filtered
+        except Exception as e:
+            error_msg = f"Error during language filtering: {e}\n{traceback.format_exc()}"
+            logger.error(error_msg)
+            metrics['errors'].append(error_msg)
+            # Continue with all comments on error
+
+        if not comments:
+            logger.warning("No comments passed language filter. Exiting workflow.")
+            return metrics
+
+        # Phase 1.6: Pre-filtering (reduce AI costs)
+        logger.info("\n" + "=" * 80)
+        logger.info("PHASE 1.6: Pre-Filtering Low-Quality Comments")
+        logger.info("=" * 80)
+        try:
+            filtered_comments, prefilter_stats = prefilter.filter_batch(comments)
+            metrics['skipped_by_prefilter'] = prefilter_stats['total'] - prefilter_stats['passed']
+            metrics['passed_prefilter'] = prefilter_stats['passed']
+
+            cost_reduction = (metrics['skipped_by_prefilter'] / prefilter_stats['total'] * 100) if prefilter_stats['total'] > 0 else 0
+            logger.info(f"✓ Pre-filter: {metrics['passed_prefilter']}/{prefilter_stats['total']} passed ({cost_reduction:.1f}% cost reduction)")
+
+            comments = filtered_comments
+        except Exception as e:
+            error_msg = f"Error during pre-filtering: {e}\n{traceback.format_exc()}"
+            logger.error(error_msg)
+            metrics['errors'].append(error_msg)
+            # Continue with all comments on error
+
+        if not comments:
+            logger.info("No comments passed pre-filter. Exiting workflow.")
             return metrics
 
         # Phase 2: Filter duplicates
@@ -77,6 +146,19 @@ def main():
             logger.info("No unique comments to qualify. Exiting workflow.")
             return metrics
 
+        # Phase 2.5: Keyword detection
+        logger.info("\n" + "=" * 80)
+        logger.info("PHASE 2.5: Keyword Detection")
+        logger.info("=" * 80)
+        try:
+            unique_comments = keyword_detector.detect_batch(unique_comments)
+            logger.info(f"✓ Keyword detection complete for {len(unique_comments)} comments")
+        except Exception as e:
+            error_msg = f"Error during keyword detection: {e}\n{traceback.format_exc()}"
+            logger.error(error_msg)
+            metrics['errors'].append(error_msg)
+            # Continue without keyword detection on error
+
         # Phase 3: Qualify leads with AI
         logger.info("\n" + "=" * 80)
         logger.info("PHASE 3: AI Lead Qualification")
@@ -84,7 +166,7 @@ def main():
         try:
             qualified_leads = qualifier.qualify_batch(unique_comments)
 
-            # Count by intent
+            # Count by intent (legacy and new)
             for lead in qualified_leads:
                 intent = lead.get('intent', 'Low')
                 if intent == 'High':
@@ -94,8 +176,24 @@ def main():
                 else:
                     metrics['low_intent'] += 1
 
+                # Count by new intent_type
+                intent_type = lead.get('intent_type', 'low_intent')
+                if intent_type == 'spiritual':
+                    metrics['spiritual'] += 1
+                elif intent_type == 'mental_pain':
+                    metrics['mental_pain'] += 1
+                elif intent_type == 'discipline':
+                    metrics['discipline'] += 1
+                elif intent_type == 'physical_pain':
+                    metrics['physical_pain'] += 1
+                elif intent_type == 'practice_aligned':
+                    metrics['practice_aligned'] += 1
+
             logger.info(f"✓ Qualified {len(qualified_leads)} leads")
-            logger.info(f"  High: {metrics['high_intent']}, Medium: {metrics['medium_intent']}, Low: {metrics['low_intent']}")
+            logger.info(f"  Legacy: High={metrics['high_intent']}, Medium={metrics['medium_intent']}, Low={metrics['low_intent']}")
+            logger.info(f"  By type: Spiritual={metrics['spiritual']}, Mental={metrics['mental_pain']}, "
+                       f"Discipline={metrics['discipline']}, Physical={metrics['physical_pain']}, "
+                       f"Practice-aligned={metrics['practice_aligned']}")
         except Exception as e:
             error_msg = f"Error during qualification: {e}\n{traceback.format_exc()}"
             logger.error(error_msg)
@@ -150,11 +248,14 @@ def main():
         logger.info("=" * 80)
         logger.info(f"Duration: {duration:.2f} seconds")
         logger.info(f"Scraped: {metrics['scraped']}")
+        logger.info(f"Language Filtered: {metrics['skipped_by_language']}")
+        logger.info(f"Pre-Filter Skipped: {metrics['skipped_by_prefilter']} ({metrics['skipped_by_prefilter']/(metrics['scraped'] or 1)*100:.1f}% cost reduction)")
+        logger.info(f"Passed Pre-Filter: {metrics['passed_prefilter']}")
         logger.info(f"Duplicates: {metrics['duplicates']}")
         logger.info(f"Unique: {metrics['unique']}")
-        logger.info(f"High Intent: {metrics['high_intent']}")
-        logger.info(f"Medium Intent: {metrics['medium_intent']}")
-        logger.info(f"Low Intent: {metrics['low_intent']}")
+        logger.info(f"High Intent: {metrics['high_intent']}, Medium: {metrics['medium_intent']}, Low: {metrics['low_intent']}")
+        logger.info(f"By Type: Spiritual={metrics['spiritual']}, Mental={metrics['mental_pain']}, "
+                   f"Discipline={metrics['discipline']}, Physical={metrics['physical_pain']}, Practice={metrics['practice_aligned']}")
         logger.info(f"Stored: {metrics['stored']}")
 
         if metrics['errors']:
