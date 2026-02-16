@@ -274,8 +274,9 @@ def main():
                             # Generate reply for each thread
                             for i, thread in enumerate(threads_created):
                                 try:
-                                    # Assign teacher (round-robin)
-                                    teacher = teachers[i % len(teachers)]
+                                    # NO AUTO-ASSIGNMENT - Teachers will claim leads manually
+                                    # Leave assigned_teacher_id as NULL
+                                    teacher = teachers[0]  # Use first teacher profile for reply generation style
 
                                     # Build conversation context
                                     context = {
@@ -296,18 +297,18 @@ def main():
                                         'Sign Off': teacher.get('sign_off', 'Blessings')
                                     })
 
-                                    # Store in pending_replies
+                                    # Store in pending_replies WITHOUT teacher assignment
+                                    # Teachers will manually claim leads
                                     pending_reply = database.create_pending_reply(
                                         thread['id'],
                                         thread,
                                         reply_data['reply_text'],
-                                        teacher['id']
+                                        None  # NO AUTO-ASSIGNMENT - teachers claim manually
                                     )
 
                                     if pending_reply:
                                         replies_generated.append(pending_reply)
-                                        logger.info(f"Generated reply for {context['lead_name']} "
-                                                  f"(assigned to {teacher.get('teacher_name', 'Unknown')})")
+                                        logger.info(f"Generated reply for {context['lead_name']} (unassigned - available to all teachers)")
 
                                 except Exception as e:
                                     logger.error(f"Error generating reply for thread {thread['id']}: {e}")

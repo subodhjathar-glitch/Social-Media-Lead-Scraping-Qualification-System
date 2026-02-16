@@ -787,7 +787,9 @@ elif page == "✅ Pending Approvals":
     else:
         st.warning("⚠️ YouTube OAuth not configured - Run `python setup_youtube_oauth.py` to enable auto-posting")
 
-    # Fetch pending approvals
+    # Fetch ALL pending approvals (visible to all teachers)
+    st.info("💡 **New System:** All leads visible to all teachers. You can claim any lead by approving it.")
+
     pending = supabase.table('pending_replies')\
         .select('*, conversation_threads(*)')\
         .eq('approval_status', 'pending')\
@@ -797,7 +799,12 @@ elif page == "✅ Pending Approvals":
     if not pending.data:
         st.success("🎉 All caught up! No pending approvals.")
     else:
-        st.info(f"📬 **{len(pending.data)} replies** awaiting your approval")
+        # Show all leads - teachers can pick which to respond to
+        my_leads = [r for r in pending.data if r.get('assigned_teacher_id') == teacher.get('id')]
+        available_leads = [r for r in pending.data if not r.get('assigned_teacher_id')]
+        other_leads = [r for r in pending.data if r.get('assigned_teacher_id') and r.get('assigned_teacher_id') != teacher.get('id')]
+
+        st.markdown(f"**Your Active Conversations:** {len(my_leads)} | **Available:** {len(available_leads)} | **Other Teachers:** {len(other_leads)}")
 
         # Approval Cards
         for i, reply in enumerate(pending.data, 1):
@@ -842,6 +849,13 @@ elif page == "✅ Pending Approvals":
 
                 with col1:
                     if st.button("✅ Approve & Post", key=f"approve_{reply['id']}", use_container_width=True):
+                        # Assign to current teacher if not already assigned
+                        if not reply.get('assigned_teacher_id'):
+                            supabase.table('pending_replies').update({
+                                'assigned_teacher_id': teacher['id']
+                            }).eq('id', reply['id']).execute()
+                            st.info(f"✓ Lead claimed by {teacher['teacher_name']}")
+
                         # Capture edit for learning
                         original_text = reply['ai_generated_reply']
 
@@ -1312,7 +1326,12 @@ elif page == "👤 My Profile":
         name = st.text_input("Name", value=teacher.get('teacher_name', ''))
         email_display = st.text_input("Email (read-only)", value=teacher.get('email', ''), disabled=True)
         contact = st.text_input("Contact", value=teacher.get('contact_number', '') or '')
-        role = st.text_input("Role", value=teacher.get('role', '') or '')
+        about_teacher = st.text_area(
+            "About Teacher",
+            value=teacher.get('role', '') or '',
+            height=150,
+            help="Write a complete description about yourself, your experience, and teaching style"
+        )
         tone = st.selectbox(
             "Tone",
             options=["Compassionate", "Casual", "Formal"],
@@ -1322,19 +1341,24 @@ elif page == "👤 My Profile":
         daily_limit = st.number_input("Daily Reply Limit", 1, 50, teacher.get('daily_reply_limit', 10))
 
         if st.form_submit_button("💾 Save Changes"):
-            supabase.table('teacher_profiles').update({
-                'teacher_name': name,
-                'contact_number': contact,
-                'role': role,
-                'tone_preference': tone,
-                'sign_off': sign_off,
-                'daily_reply_limit': daily_limit
-            }).eq('id', teacher['id']).execute()
+            try:
+                supabase.table('teacher_profiles').update({
+                    'teacher_name': name,
+                    'contact_number': contact,
+                    'role': about_teacher,
+                    'tone_preference': tone,
+                    'sign_off': sign_off,
+                    'daily_reply_limit': daily_limit
+                }).eq('id', teacher['id']).execute()
 
-            st.success("✅ Profile updated!")
-            st.session_state.teacher_info = supabase.table('teacher_profiles')\
-                .select('*').eq('id', teacher['id']).single().execute().data
-            st.rerun()
+                st.success("✅ Profile updated successfully!")
+                st.balloons()
+                # Force refresh
+                time.sleep(1)
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Error saving: {e}")
+                st.info("Please try again or contact administrator")
 
     st.markdown("---")
 

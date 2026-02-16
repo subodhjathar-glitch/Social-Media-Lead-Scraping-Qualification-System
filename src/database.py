@@ -497,7 +497,7 @@ class SupabaseDatabase:
         reraise=True
     )
     def create_pending_reply(self, thread_id: str, thread_data: Dict,
-                            generated_reply: str, teacher_id: str) -> Optional[Dict]:
+                            generated_reply: str, teacher_id: Optional[str] = None) -> Optional[Dict]:
         """
         Create a pending reply for teacher approval.
 
