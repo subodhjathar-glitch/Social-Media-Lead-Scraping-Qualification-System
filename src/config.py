@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     # Supabase (replaces Airtable)
     supabase_url: str
     supabase_key: str  # Anon/public key for client
+    supabase_service_role_key: str = ""  # Service role key for backend operations (bypasses RLS)
 
     # Airtable (deprecated - kept for backward compatibility)
     airtable_token: str = ""

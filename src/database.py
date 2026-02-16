@@ -21,12 +21,13 @@ class SupabaseDatabase:
 
         try:
             url = (settings.supabase_url or "").strip().rstrip("/")
-            key = (settings.supabase_key or "").strip()
+            # Prefer service_role_key for backend operations (bypasses RLS)
+            key = (settings.supabase_service_role_key or settings.supabase_key or "").strip()
 
             if not url or not key or "your_" in url or "your_" in key or "supabase.co" not in url:
                 logger.warning(
                     "Supabase credentials not configured. System will work in offline mode. "
-                    "To enable Supabase: Set SUPABASE_URL and SUPABASE_KEY in .env"
+                    "To enable Supabase: Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env"
                 )
                 self.is_available = False
                 return
@@ -329,20 +330,33 @@ class SupabaseDatabase:
 
     def get_active_teachers(self) -> List[Dict]:
         """Get all active teachers for reply assignment."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch teachers.")
+            return []
+
         try:
             response = self.client.table('teacher_profiles')\
                 .select('*')\
                 .eq('active', True)\
                 .execute()
 
+            if not response.data:
+                logger.warning("No active teachers found in database")
+                return []
+
             logger.info(f"Found {len(response.data)} active teachers")
             return response.data
         except Exception as e:
             logger.error(f"Error fetching active teachers: {e}")
+            logger.exception("Full traceback:")
             return []
 
     def get_teacher_by_email(self, email: str) -> Optional[Dict]:
         """Get teacher profile by email."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch teacher.")
+            return None
+
         try:
             response = self.client.table('teacher_profiles')\
                 .select('*')\
@@ -352,6 +366,7 @@ class SupabaseDatabase:
             return response.data[0] if response.data else None
         except Exception as e:
             logger.error(f"Error fetching teacher by email: {e}")
+            logger.exception("Full traceback:")
             return None
 
     # ===== CONVERSATION THREADS METHODS =====
@@ -401,6 +416,10 @@ class SupabaseDatabase:
 
     def get_thread_by_lead(self, lead_id: str) -> Optional[Dict]:
         """Get conversation thread by lead ID."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch thread.")
+            return None
+
         try:
             response = self.client.table('conversation_threads')\
                 .select('*')\
@@ -410,10 +429,15 @@ class SupabaseDatabase:
             return response.data[0] if response.data else None
         except Exception as e:
             logger.error(f"Error fetching thread by lead: {e}")
+            logger.exception("Full traceback:")
             return None
 
     def update_conversation_thread(self, thread_id: str, updates: Dict) -> bool:
         """Update conversation thread fields."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot update thread.")
+            return False
+
         try:
             response = self.client.table('conversation_threads')\
                 .update(updates)\
@@ -424,10 +448,15 @@ class SupabaseDatabase:
             return True
         except Exception as e:
             logger.error(f"Error updating conversation thread: {e}")
+            logger.exception("Full traceback:")
             return False
 
     def get_active_threads(self) -> List[Dict]:
         """Get all active conversation threads."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch threads.")
+            return []
+
         try:
             response = self.client.table('conversation_threads')\
                 .select('*')\
@@ -438,10 +467,15 @@ class SupabaseDatabase:
             return response.data
         except Exception as e:
             logger.error(f"Error fetching active threads: {e}")
+            logger.exception("Full traceback:")
             return []
 
     def get_thread_by_id(self, thread_id: str) -> Optional[Dict]:
         """Get thread by ID."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch thread.")
+            return None
+
         try:
             response = self.client.table('conversation_threads')\
                 .select('*')\
@@ -452,6 +486,7 @@ class SupabaseDatabase:
             return response.data
         except Exception as e:
             logger.error(f"Error fetching thread: {e}")
+            logger.exception("Full traceback:")
             return None
 
     # ===== PENDING REPLIES METHODS =====
@@ -499,6 +534,10 @@ class SupabaseDatabase:
 
     def get_pending_replies(self, teacher_email: Optional[str] = None) -> List[Dict]:
         """Get pending replies, optionally filtered by teacher."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch replies.")
+            return []
+
         try:
             query = self.client.table('pending_replies')\
                 .select('*')\
@@ -510,10 +549,15 @@ class SupabaseDatabase:
             return response.data
         except Exception as e:
             logger.error(f"Error fetching pending replies: {e}")
+            logger.exception("Full traceback:")
             return []
 
     def update_pending_reply(self, reply_id: str, updates: Dict) -> bool:
         """Update pending reply fields."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot update reply.")
+            return False
+
         try:
             response = self.client.table('pending_replies')\
                 .update(updates)\
@@ -524,10 +568,15 @@ class SupabaseDatabase:
             return True
         except Exception as e:
             logger.error(f"Error updating pending reply: {e}")
+            logger.exception("Full traceback:")
             return False
 
     def get_approved_replies(self) -> List[Dict]:
         """Get all approved replies ready to post."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch approved replies.")
+            return []
+
         try:
             response = self.client.table('pending_replies')\
                 .select('*')\
@@ -538,12 +587,17 @@ class SupabaseDatabase:
             return response.data
         except Exception as e:
             logger.error(f"Error fetching approved replies: {e}")
+            logger.exception("Full traceback:")
             return []
 
     # ===== RESOURCES METHODS =====
 
     def get_active_resources(self) -> List[Dict]:
         """Get all active resources."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch resources.")
+            return []
+
         try:
             response = self.client.table('resources')\
                 .select('*')\
@@ -554,10 +608,15 @@ class SupabaseDatabase:
             return response.data
         except Exception as e:
             logger.error(f"Error fetching active resources: {e}")
+            logger.exception("Full traceback:")
             return []
 
     def get_resource_by_name(self, resource_name: str) -> Optional[Dict]:
         """Get resource by name."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch resource.")
+            return None
+
         try:
             response = self.client.table('resources')\
                 .select('*')\
@@ -567,6 +626,7 @@ class SupabaseDatabase:
             return response.data[0] if response.data else None
         except Exception as e:
             logger.error(f"Error fetching resource by name: {e}")
+            logger.exception("Full traceback:")
             return None
 
     def get_resources_for_pain_type(self, pain_type: str, readiness_score: int) -> List[Dict]:
@@ -580,6 +640,10 @@ class SupabaseDatabase:
         Returns:
             List of matching resources
         """
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot fetch resources for pain type.")
+            return []
+
         try:
             response = self.client.table('resources')\
                 .select('*')\
@@ -603,10 +667,15 @@ class SupabaseDatabase:
 
         except Exception as e:
             logger.error(f"Error fetching resources for pain type: {e}")
+            logger.exception("Full traceback:")
             return []
 
     def increment_resource_share_count(self, resource_id: str) -> bool:
         """Increment the times shared counter for a resource."""
+        if not self.is_available or not self.client:
+            logger.warning("Supabase unavailable. Cannot increment resource share count.")
+            return False
+
         try:
             # Get current count
             response = self.client.table('resources')\
@@ -626,6 +695,7 @@ class SupabaseDatabase:
             return False
         except Exception as e:
             logger.error(f"Error incrementing resource share count: {e}")
+            logger.exception("Full traceback:")
             return False
 
 

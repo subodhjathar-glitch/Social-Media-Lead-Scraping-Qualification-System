@@ -11,6 +11,8 @@ from src.database import AirtableDatabase
 from src.notifier import EmailNotifier
 from src.prefilter import CommentPreFilter
 from src.keywords import KeywordDetector
+from src.conversation import ConversationTracker
+from src.reply_generator import ReplyGenerator
 from src.utils import setup_logger, detect_language
 
 logger = setup_logger(__name__)
@@ -39,6 +41,9 @@ def main():
         'physical_pain': 0,
         'practice_aligned': 0,
         'stored': 0,
+        'threads_created': 0,
+        'replies_generated': 0,
+        'pending_approvals': 0,
         'errors': []
     }
 
@@ -204,23 +209,128 @@ def main():
             logger.warning("No qualified leads to store. Exiting workflow.")
             return metrics
 
-        # Phase 4: Store leads in Airtable
+        # Phase 4: Store leads in Supabase
         logger.info("\n" + "=" * 80)
-        logger.info("PHASE 4: Storing Leads in Airtable")
+        logger.info("PHASE 4: Storing Leads in Supabase")
         logger.info("=" * 80)
         try:
             created_records = database.batch_create_leads(qualified_leads)
             metrics['stored'] = len(created_records)
-            logger.info(f"✓ Stored {metrics['stored']} leads in Airtable")
+            logger.info(f"✓ Stored {metrics['stored']} leads in Supabase")
         except Exception as e:
             error_msg = f"Error storing leads: {e}\n{traceback.format_exc()}"
             logger.error(error_msg)
             metrics['errors'].append(error_msg)
             created_records = []
 
-        # Phase 5: Send email digest
+        if not created_records:
+            logger.warning("No leads were stored. Skipping conversation thread creation.")
+        else:
+            # Phase 5: Create conversation threads for qualified leads
+            logger.info("\n" + "=" * 80)
+            logger.info("PHASE 5: Creating Conversation Threads")
+            logger.info("=" * 80)
+            try:
+                conversation_tracker = ConversationTracker(database)
+                threads_created = []
+
+                for record in created_records:
+                    # Check if this lead should get a conversation thread
+                    lead_data = {
+                        'readiness_score': record.get('readiness_score', 0),
+                        'intent_type': record.get('intent_type', 'low_intent'),
+                        'pain_intensity': record.get('pain_intensity', 0)
+                    }
+
+                    if conversation_tracker.should_create_thread(lead_data):
+                        # Create thread
+                        thread = database.create_conversation_thread(record['id'], record)
+                        if thread:
+                            threads_created.append(thread)
+                            logger.info(f"Created thread for {record.get('name', 'Unknown')} "
+                                      f"(readiness: {record.get('readiness_score', 0)})")
+
+                metrics['threads_created'] = len(threads_created)
+                logger.info(f"✓ Created {metrics['threads_created']} conversation threads")
+
+                # Phase 6: Generate AI replies for threads
+                if threads_created:
+                    logger.info("\n" + "=" * 80)
+                    logger.info("PHASE 6: Generating AI Replies")
+                    logger.info("=" * 80)
+                    try:
+                        # Get active teachers
+                        teachers = database.get_active_teachers()
+
+                        if not teachers:
+                            logger.warning("No active teachers found. Skipping reply generation.")
+                            logger.warning("Add teacher profiles via the dashboard to enable reply generation.")
+                        else:
+                            logger.info(f"Found {len(teachers)} active teacher(s)")
+
+                            reply_generator = ReplyGenerator(database)
+                            replies_generated = []
+
+                            # Generate reply for each thread
+                            for i, thread in enumerate(threads_created):
+                                try:
+                                    # Assign teacher (round-robin)
+                                    teacher = teachers[i % len(teachers)]
+
+                                    # Build conversation context
+                                    context = {
+                                        'lead_name': thread.get('comment_author', 'Unknown'),
+                                        'conversation_stage': 0,  # First reply
+                                        'pain_type': thread.get('pain_type', 'unknown'),
+                                        'readiness_score': thread.get('readiness_score', 0),
+                                        'resources_shared': [],
+                                        'full_history': thread.get('full_history', '')
+                                    }
+
+                                    # Generate reply
+                                    reply_data = reply_generator.generate_reply(context, {
+                                        'Teacher Name': teacher.get('teacher_name', 'Teacher'),
+                                        'Role': teacher.get('role', 'Isha Volunteer'),
+                                        'Practice Experience': teacher.get('practice_experience', ''),
+                                        'Tone Preference': teacher.get('tone_preference', 'Compassionate'),
+                                        'Sign Off': teacher.get('sign_off', 'Blessings')
+                                    })
+
+                                    # Store in pending_replies
+                                    pending_reply = database.create_pending_reply(
+                                        thread['id'],
+                                        thread,
+                                        reply_data['reply_text'],
+                                        teacher['id']
+                                    )
+
+                                    if pending_reply:
+                                        replies_generated.append(pending_reply)
+                                        logger.info(f"Generated reply for {context['lead_name']} "
+                                                  f"(assigned to {teacher.get('teacher_name', 'Unknown')})")
+
+                                except Exception as e:
+                                    logger.error(f"Error generating reply for thread {thread['id']}: {e}")
+                                    continue
+
+                            metrics['replies_generated'] = len(replies_generated)
+                            metrics['pending_approvals'] = len(replies_generated)
+                            logger.info(f"✓ Generated {metrics['replies_generated']} AI replies")
+                            logger.info(f"✓ {metrics['pending_approvals']} replies awaiting teacher approval")
+
+                    except Exception as e:
+                        error_msg = f"Error during reply generation: {e}\n{traceback.format_exc()}"
+                        logger.error(error_msg)
+                        metrics['errors'].append(error_msg)
+
+            except Exception as e:
+                error_msg = f"Error creating conversation threads: {e}\n{traceback.format_exc()}"
+                logger.error(error_msg)
+                metrics['errors'].append(error_msg)
+
+        # Phase 7: Send email digest
         logger.info("\n" + "=" * 80)
-        logger.info("PHASE 5: Sending Email Digest")
+        logger.info("PHASE 7: Sending Email Digest")
         logger.info("=" * 80)
         try:
             # Get recent leads (last 24 hours)
@@ -257,6 +367,9 @@ def main():
         logger.info(f"By Type: Spiritual={metrics['spiritual']}, Mental={metrics['mental_pain']}, "
                    f"Discipline={metrics['discipline']}, Physical={metrics['physical_pain']}, Practice={metrics['practice_aligned']}")
         logger.info(f"Stored: {metrics['stored']}")
+        logger.info(f"Conversation Threads Created: {metrics['threads_created']}")
+        logger.info(f"AI Replies Generated: {metrics['replies_generated']}")
+        logger.info(f"Pending Teacher Approval: {metrics['pending_approvals']}")
 
         if metrics['errors']:
             logger.warning(f"Errors encountered: {len(metrics['errors'])}")

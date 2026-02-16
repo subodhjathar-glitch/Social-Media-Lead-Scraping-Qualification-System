@@ -1,14 +1,14 @@
 """
-Isha Lead Engagement System - Enhanced Streamlit Dashboard
-Version 2.0 with Supabase + Full Feature Set
+🕉️ YOGAVANI Lead Engagement System
+Beautiful, minimal, spiritually-grounded interface
 
-Features:
-- Teacher authentication
-- Airtable-style approval sheet
-- YouTube auto-posting
-- Comprehensive analytics
-- Teacher self-service
-- Resource management
+Brand Colors:
+- Maroon: #951B1E (accent, buttons)
+- Grey: #999999 (secondary text)
+- Green: #3E4938 (headings, important)
+- White: #FFFFFF (background)
+
+Design: Minimal. Calm. Harmonious. Breathable.
 """
 
 import streamlit as st
@@ -19,155 +19,520 @@ import plotly.graph_objects as go
 from supabase import create_client
 import os
 from dotenv import load_dotenv
-import json
 
-# Import authentication (simple email gate)
+# Import authentication and YouTube posting
 from src.auth import SimpleEmailGate
+from src.youtube_poster_supabase import YouTubePoster
+from src.youtube_oauth import is_oauth_configured
+from src.utils import setup_logger
 
-# Load environment variables
+logger = setup_logger(__name__)
+
+# Load environment
 load_dotenv()
 
 # ================================
 # PAGE CONFIGURATION
 # ================================
 st.set_page_config(
-    page_title="Isha Lead Engagement",
+    page_title="Yogavani | Lead Engagement",
     page_icon="🕉️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ================================
-# CUSTOM CSS
+# YOGAVANI BRAND STYLING
 # ================================
 st.markdown("""
     <style>
-    /* Main styling */
-    .main-header {
-        font-size: 2.5rem;
-        color: #8b4513;
-        text-align: center;
-        padding: 1rem 0;
-        border-bottom: 3px solid #8b4513;
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Garet:wght@400;500;700&family=Libre+Baskerville:wght@400;700&display=swap');
+
+    /* Global Variables - YOGAVANI Brand */
+    :root {
+        --color-maroon: #951B1E;
+        --color-grey: #999999;
+        --color-green: #3E4938;
+        --color-white: #FFFFFF;
+        --color-offwhite: #FAFAFA;
+        --font-heading: 'Garet', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-body: 'Libre Baskerville', Georgia, serif;
+    }
+
+    /* Reset & Base */
+    * {
+        font-family: var(--font-body);
+    }
+
+    /* Streamlit Overrides */
+    .stApp {
+        background-color: var(--color-white);
+    }
+
+    /* Headings - Garet Font, Deep Green */
+    h1, h2, h3, h4, h5, h6, .css-10trblm, .css-1629p8f {
+        font-family: var(--font-heading) !important;
+        color: var(--color-green) !important;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    h1 {
+        font-size: 2.8rem;
         margin-bottom: 2rem;
+        margin-top: 1rem;
     }
 
-    /* Metric cards */
-    .metric-card {
-        background: linear-gradient(135deg, #f9f9f9 0%, #fff 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 5px solid #8b4513;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin: 0.5rem 0;
+    h2 {
+        font-size: 2rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
     }
 
-    /* Buttons */
+    h3 {
+        font-size: 1.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+    }
+
+    /* Body Text - Libre Baskerville */
+    p, .css-183lzff, div, span, label {
+        font-family: var(--font-body);
+        color: #333;
+        line-height: 1.8;
+    }
+
+    /* Sidebar - Minimal Styling */
+    [data-testid="stSidebar"] {
+        background-color: var(--color-offwhite);
+        border-right: 1px solid #E5E5E5;
+    }
+
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        color: var(--color-green) !important;
+    }
+
+    /* Buttons - Maroon with Soft Corners */
     .stButton>button {
-        background-color: #8b4513;
-        color: white;
+        background-color: var(--color-maroon);
+        color: var(--color-white);
         border-radius: 8px;
-        padding: 0.5rem 2rem;
-        font-weight: bold;
+        padding: 0.6rem 1.8rem;
+        font-weight: 600;
         border: none;
+        box-shadow: 0 2px 8px rgba(149, 27, 30, 0.15);
         transition: all 0.3s ease;
+        font-family: var(--font-heading);
+        letter-spacing: 0.02em;
     }
+
     .stButton>button:hover {
-        background-color: #a0522d;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        background-color: #7A1518;
+        box-shadow: 0 4px 12px rgba(149, 27, 30, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .stButton>button:active {
+        transform: translateY(0);
+    }
+
+    /* Metric Cards - Soft, Calm */
+    [data-testid="stMetricValue"] {
+        font-family: var(--font-heading);
+        font-size: 2.5rem;
+        color: var(--color-green);
+    }
+
+    [data-testid="stMetricLabel"] {
+        font-family: var(--font-body);
+        color: var(--color-grey);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Cards & Containers */
+    .element-container {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Expanders - Soft Styling */
+    .streamlit-expanderHeader {
+        font-family: var(--font-heading);
+        color: var(--color-green);
+        background-color: var(--color-offwhite);
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #E8E8E8;
+    }
+
+    .streamlit-expanderHeader:hover {
+        background-color: #F5F5F5;
+        border-color: var(--color-maroon);
+    }
+
+    .streamlit-expanderContent {
+        background-color: var(--color-white);
+        border-radius: 0 0 8px 8px;
+        padding: 1.5rem;
+        border: 1px solid #E8E8E8;
+        border-top: none;
+    }
+
+    /* Text Areas & Inputs - Fixed Black Background */
+    .stTextArea textarea, .stTextInput input {
+        border-radius: 6px;
+        border: 1px solid #D0D0D0;
+        padding: 0.8rem;
+        font-family: var(--font-body);
+        line-height: 1.6;
+        background-color: #FFFFFF !important;
+        color: #333333 !important;
+    }
+
+    .stTextArea textarea:focus, .stTextInput input:focus {
+        border-color: var(--color-green);
+        box-shadow: 0 0 0 2px rgba(62, 73, 56, 0.1);
+        background-color: #FFFFFF !important;
+    }
+
+    /* Fix autofill background */
+    .stTextInput input:-webkit-autofill,
+    .stTextInput input:-webkit-autofill:hover,
+    .stTextInput input:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+        -webkit-text-fill-color: #333333 !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* Dataframes - Clean Tables */
+    .dataframe {
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+    }
+
+    .dataframe thead th {
+        background-color: var(--color-green) !important;
+        color: var(--color-white) !important;
+        font-family: var(--font-heading);
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+    }
+
+    .dataframe tbody tr:hover {
+        background-color: #F8F8F8;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.3rem 0.9rem;
+        border-radius: 20px;
+        font-family: var(--font-heading);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+
+    .status-pending {
+        background-color: #FFF4E6;
+        color: #B45F06;
+    }
+
+    .status-approved {
+        background-color: #E8F5E9;
+        color: #2E7D32;
+    }
+
+    .status-posted {
+        background-color: #E3F2FD;
+        color: #1565C0;
+    }
+
+    /* Pain Type Badges */
+    .pain-badge {
+        display: inline-block;
+        padding: 0.25rem 0.8rem;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        margin: 0.2rem;
+        font-family: var(--font-heading);
+    }
+
+    .pain-spiritual {
+        background-color: #F3E5F5;
+        color: #6A1B9A;
+    }
+
+    .pain-mental {
+        background-color: #FFEBEE;
+        color: #C62828;
+    }
+
+    .pain-discipline {
+        background-color: #E1F5FE;
+        color: #01579B;
+    }
+
+    .pain-physical {
+        background-color: #FFF3E0;
+        color: #E65100;
+    }
+
+    /* Info/Success/Warning Boxes */
+    .stAlert {
+        border-radius: 8px;
+        border-left: 4px solid var(--color-green);
+        padding: 1rem 1.2rem;
+        font-family: var(--font-body);
+    }
+
+    /* Links */
+    a {
+        color: var(--color-maroon);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    a:hover {
+        color: var(--color-green);
+        text-decoration: underline;
+    }
+
+    /* Selectbox, Multiselect */
+    .stSelectbox, .stMultiSelect {
+        font-family: var(--font-body);
+    }
+
+    /* Divider */
+    hr {
+        margin: 2rem 0;
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--color-grey), transparent);
+        opacity: 0.3;
+    }
+
+    /* Main Content Padding */
+    .main .block-container {
+        padding: 2rem 3rem;
+        max-width: 1400px;
+    }
+
+    /* Remove Default Margins */
+    .element-container:first-child {
+        margin-top: 0;
+    }
+
+    /* Calm Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #F5F5F5;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-grey);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--color-green);
+    }
+
+    /* Plotly Charts - Clean Styling */
+    .js-plotly-plot {
+        border-radius: 8px;
+    }
+
+    /* ========================================
+       MODERN UI ENHANCEMENTS
+       ======================================== */
+
+    /* Smooth Transitions for All Interactive Elements */
+    .stButton>button,
+    .stTextInput input,
+    .stTextArea textarea,
+    .stSelectbox select,
+    .stSlider,
+    .streamlit-expanderHeader {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Slider - Enhanced Visual Feedback with Gradient */
+    .stSlider {
+        padding: 1.5rem 0;
+    }
+
+    .stSlider > div > div > div > div {
+        background: linear-gradient(90deg,
+            var(--color-grey) 0%,
+            var(--color-green) 50%,
+            var(--color-maroon) 100%);
+        height: 8px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .stSlider > div > div > div > div > div {
+        background: linear-gradient(135deg, var(--color-maroon), #C02326);
+        border: 3px solid var(--color-white);
+        box-shadow: 0 4px 12px rgba(149, 27, 30, 0.4);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        cursor: grab;
+    }
+
+    .stSlider > div > div > div > div > div:hover {
+        transform: scale(1.3);
+        box-shadow: 0 6px 20px rgba(149, 27, 30, 0.6);
+    }
+
+    .stSlider > div > div > div > div > div:active {
+        cursor: grabbing;
+        transform: scale(1.2);
+    }
+
+    /* Enhanced Cards with Hover Effects */
+    .element-container {
+        transition: transform 0.2s ease;
+    }
+
+    .element-container:hover {
         transform: translateY(-2px);
     }
 
-    /* Status badges */
-    .status-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 15px;
-        font-weight: bold;
-        font-size: 0.85rem;
-    }
-    .status-pending { background-color: #fff3cd; color: #856404; }
-    .status-approved { background-color: #d4edda; color: #155724; }
-    .status-posted { background-color: #d1ecf1; color: #0c5460; }
-    .status-rejected { background-color: #f8d7da; color: #721c24; }
-
-    /* Pain type badges */
-    .pain-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        margin: 0.25rem;
-    }
-    .pain-spiritual { background-color: #e3d7ff; color: #5a189a; }
-    .pain-mental { background-color: #ffccd5; color: #c9184a; }
-    .pain-discipline { background-color: #b8e6ff; color: #0077b6; }
-    .pain-physical { background-color: #ffd6a5; color: #d97706; }
-
-    /* Tables */
-    .dataframe {
-        font-size: 0.9rem;
-    }
-    .dataframe th {
-        background-color: #8b4513 !important;
-        color: white !important;
-        font-weight: bold;
-    }
-    .dataframe tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    /* Success/Warning boxes */
-    .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-    .warning-box {
-        background-color: #fff3cd;
-        border: 1px solid #ffeeba;
-        color: #856404;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-    .info-box {
-        background-color: #d1ecf1;
-        border: 1px solid #bee5eb;
-        color: #0c5460;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-
-    /* Progress bars */
-    .readiness-bar {
-        height: 20px;
-        border-radius: 10px;
-        background-color: #e9ecef;
-        overflow: hidden;
-    }
-    .readiness-fill {
-        height: 100%;
-        transition: width 0.3s ease;
-    }
-
-    /* Cards */
-    .approval-card {
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
+    /* Modern Shadows for Depth */
+    .stMetric {
+        background: linear-gradient(135deg, #FFFFFF 0%, #F8F8F8 100%);
         padding: 1.5rem;
-        margin: 1rem 0;
-        background-color: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
     }
-    .approval-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-        border-color: #8b4513;
+
+    .stMetric:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+    }
+
+    /* Animated Expanders */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, var(--color-offwhite) 0%, #F0F0F0 100%);
+        transition: all 0.3s ease;
+    }
+
+    .streamlit-expanderHeader:hover {
+        background: linear-gradient(135deg, #F5F5F5 0%, #E8E8E8 100%);
+        transform: translateX(4px);
+    }
+
+    /* Enhanced Button Animations */
+    .stButton>button:hover {
+        transform: translateY(-2px) scale(1.02);
+    }
+
+    .stButton>button:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    /* Loading Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .element-container {
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    /* Modern Select Boxes */
+    .stSelectbox > div > div {
+        border-radius: 8px;
+        border: 2px solid #E0E0E0;
+        transition: all 0.3s ease;
+    }
+
+    .stSelectbox > div > div:hover {
+        border-color: var(--color-green);
+        box-shadow: 0 0 0 3px rgba(62, 73, 56, 0.1);
+    }
+
+    /* Enhanced Link Buttons */
+    .stLinkButton > a {
+        background: linear-gradient(135deg, var(--color-green) 0%, #2E3828 100%);
+        color: white !important;
+        padding: 0.5rem 1.2rem;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .stLinkButton > a:hover {
+        background: linear-gradient(135deg, #2E3828 0%, var(--color-green) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(62, 73, 56, 0.3);
+    }
+
+    /* Glassmorphism Effect for Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(135deg, rgba(250, 250, 250, 0.95) 0%, rgba(245, 245, 245, 0.98) 100%);
+        backdrop-filter: blur(10px);
+    }
+
+    /* Enhanced Status Badges with Animation */
+    .status-badge {
+        transition: all 0.3s ease;
+    }
+
+    .status-badge:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Pulse Animation for Pending Items */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .status-pending {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Modern DataFrame Styling */
+    .dataframe {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .dataframe tbody tr:nth-child(even) {
+        background-color: #FAFAFA;
+    }
+
+    /* Smooth Scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Enhanced Focus States with Glow */
+    .stTextArea textarea:focus,
+    .stTextInput input:focus {
+        border-color: var(--color-green);
+        box-shadow: 0 0 0 4px rgba(62, 73, 56, 0.15);
+        outline: none;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -177,54 +542,41 @@ st.markdown("""
 # ================================
 @st.cache_resource
 def init_supabase():
-    """Initialize Supabase client."""
-    url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_KEY")
+    """Initialize Supabase client with error handling."""
+    try:
+        url = os.getenv("SUPABASE_URL")
+        key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
 
-    if not url or not key:
-        st.error("⚠️ Supabase credentials not found!")
-        st.info("Add SUPABASE_URL and SUPABASE_KEY to your .env file")
+        if not url or not key:
+            st.error("⚠️ Supabase credentials not configured")
+            st.info("Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to .env file")
+            st.stop()
+
+        if "supabase.co" not in url:
+            st.error("⚠️ Invalid Supabase URL format")
+            st.stop()
+
+        client = create_client(url, key)
+
+        try:
+            client.table('leads').select('id').limit(1).execute()
+        except Exception as conn_err:
+            st.warning(f"⚠️ Supabase unreachable: {conn_err}")
+            st.info("Check internet connection and Supabase project status")
+
+        return client
+    except Exception as e:
+        st.error(f"❌ Failed to initialize Supabase: {e}")
+        st.info("Check .env configuration and try again")
         st.stop()
-
-    return create_client(url, key)
 
 supabase = init_supabase()
 
 # ================================
-# AUTHENTICATION (simple email gate)
+# AUTHENTICATION
 # ================================
 auth = SimpleEmailGate()
 auth.require_auth()
-
-# ================================
-# SIDEBAR NAVIGATION
-# ================================
-st.sidebar.title("🕉️ Isha Lead Engagement")
-st.sidebar.markdown("---")
-st.sidebar.markdown("🧭 **Navigation**")
-
-# Show user info in sidebar
-auth.show_user_info()
-
-st.sidebar.markdown("---")
-
-# Navigation
-page = st.sidebar.radio(
-    "Go to",
-    [
-        "📊 Dashboard",
-        "✅ Pending Approvals",
-        "💬 Conversations",
-        "📋 Leads",
-        "👥 Teachers",
-        "📚 Resources",
-        "📈 Analytics",
-        "👤 My Profile"
-    ]
-)
-
-st.sidebar.markdown("---")
-st.sidebar.info("💡 **Tip:** Approve replies with one click and auto-post to YouTube!")
 
 # ================================
 # HELPER FUNCTIONS
@@ -232,15 +584,9 @@ st.sidebar.info("💡 **Tip:** Approve replies with one click and auto-post to Y
 
 def get_status_badge(status: str) -> str:
     """Generate HTML for status badge."""
-    emoji_map = {
-        'pending': '🟡',
-        'approved': '✅',
-        'posted': '🚀',
-        'rejected': '❌'
-    }
+    emoji_map = {'pending': '⏳', 'approved': '✅', 'posted': '🚀', 'rejected': '❌'}
     emoji = emoji_map.get(status, '⚪')
     return f'<span class="status-badge status-{status}">{emoji} {status.title()}</span>'
-
 
 def get_pain_badge(pain_type: str) -> str:
     """Generate HTML for pain type badge."""
@@ -256,19 +602,6 @@ def get_pain_badge(pain_type: str) -> str:
     clean_name = pain_type.replace('_', ' ').title()
     css_class = pain_type.replace('_pain', '').replace('_', '-')
     return f'<span class="pain-badge pain-{css_class}">{emoji} {clean_name}</span>'
-
-
-def get_readiness_color(score: int) -> str:
-    """Get color for readiness score."""
-    if score >= 80:
-        return '#28a745'  # Green
-    elif score >= 60:
-        return '#ffc107'  # Yellow
-    elif score >= 40:
-        return '#fd7e14'  # Orange
-    else:
-        return '#dc3545'  # Red
-
 
 def format_timestamp(ts) -> str:
     """Format timestamp to human-readable."""
@@ -292,698 +625,795 @@ def format_timestamp(ts) -> str:
     except:
         return str(ts)
 
+# ================================
+# SIDEBAR NAVIGATION
+# ================================
+with st.sidebar:
+    st.markdown("# 🕉️ Yogavani")
+    st.markdown("*Lead Engagement System*")
+    st.markdown("---")
+
+    # Show user info
+    auth.show_user_info()
+
+    st.markdown("---")
+
+    # Navigation
+    page = st.radio(
+        "Navigate",
+        [
+            "📊 Dashboard",
+            "✅ Pending Approvals",
+            "🚀 Approved Replies",
+            "💬 Conversations",
+            "📋 All Leads",
+            "👥 Teachers",
+            "📚 Resources",
+            "👤 My Profile"
+        ],
+        label_visibility="collapsed"
+    )
+
+    st.markdown("---")
+    st.caption("💡 Review and approve AI-generated replies with one click")
+
 
 # ================================
 # PAGE: DASHBOARD
 # ================================
 if page == "📊 Dashboard":
-    st.markdown('<h1 class="main-header">🕉️ Dashboard</h1>', unsafe_allow_html=True)
+    # Header
+    st.markdown("# Dashboard")
+    st.markdown("Welcome to your lead engagement hub")
 
-    try:
-        # Get current teacher
-        teacher = auth.get_current_teacher()
+    # Get current teacher
+    teacher = auth.get_current_teacher()
 
-        # Welcome message
-        st.markdown(f"### Welcome, {teacher['teacher_name']}! 🙏")
+    # Metrics Row
+    st.markdown("### Today's Overview")
 
-        # Fetch dashboard stats
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    with col1:
         leads_today = supabase.table('leads').select('id', count='exact')\
             .eq('scraped_date', datetime.now().strftime('%Y-%m-%d')).execute()
+        st.metric("New Leads", leads_today.count or 0)
 
-        active_conversations = supabase.table('conversation_threads').select('id', count='exact')\
-            .eq('status', 'active').execute()
-
-        pending_approvals = supabase.table('pending_replies').select('id', count='exact')\
+    with col2:
+        pending = supabase.table('pending_replies').select('id', count='exact')\
             .eq('approval_status', 'pending').execute()
+        st.metric("⏳ Pending", pending.count or 0)
 
-        replies_posted_today = supabase.table('pending_replies').select('id', count='exact')\
+    with col3:
+        approved = supabase.table('pending_replies').select('id', count='exact')\
+            .eq('approval_status', 'approved').execute()
+        st.metric("✅ Approved", approved.count or 0)
+
+    with col4:
+        posted_today = supabase.table('pending_replies').select('id', count='exact')\
             .eq('approval_status', 'posted')\
             .gte('posted_at', datetime.now().strftime('%Y-%m-%d')).execute()
+        st.metric("🚀 Posted Today", posted_today.count or 0)
 
-        # Display metrics
-        col1, col2, col3, col4 = st.columns(4)
+    with col5:
+        active_threads = supabase.table('conversation_threads').select('id', count='exact')\
+            .eq('status', 'active').execute()
+        st.metric("💬 Conversations", active_threads.count or 0)
 
-        with col1:
-            st.metric(
-                label="✅ New Leads Today",
-                value=leads_today.count if leads_today.count else 0,
-                delta="Qualified leads"
-            )
+    st.markdown("---")
 
-        with col2:
-            st.metric(
-                label="💬 Active Conversations",
-                value=active_conversations.count if active_conversations.count else 0,
-                delta="Ongoing threads"
-            )
+    # Recent Activity
+    st.markdown("### Recent Activity")
 
-        with col3:
-            st.metric(
-                label="⏳ Pending Approvals",
-                value=pending_approvals.count if pending_approvals.count else 0,
-                delta="Awaiting review",
-                delta_color="off"
-            )
+    view_option = st.radio("📅 Time Period", ["Last 7 Days", "Last 30 Days", "All Time"], horizontal=True, index=2)
 
-        with col4:
-            st.metric(
-                label="🚀 Posted Today",
-                value=replies_posted_today.count if replies_posted_today.count else 0,
-                delta="Replies sent"
-            )
+    if view_option == "Last 7 Days":
+        cutoff = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        recent_leads = supabase.table('leads').select('*').gte('scraped_date', cutoff).execute()
+    elif view_option == "Last 30 Days":
+        cutoff = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+        recent_leads = supabase.table('leads').select('*').gte('scraped_date', cutoff).execute()
+    else:  # All Time
+        recent_leads = supabase.table('leads').select('*').order('created_at', desc=True).execute()
 
-        st.markdown("---")
-
-        # System Status
-        st.subheader("🤖 System Status")
+    if recent_leads.data:
+        df = pd.DataFrame(recent_leads.data)
 
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("**Automation Status:**")
-
-            # Get last scrape info (would need a system_logs table for real implementation)
-            st.info("""
-            ✅ System Active
-            🕐 Last scrape: 2 hours ago
-            📊 Comments processed: 45
-            ✨ Leads qualified: 12
-            🎯 Duplicate prevention: Active
-            """)
-
-        with col2:
-            st.markdown("**Quick Actions:**")
-
-            if st.button("▶️ Run Scrape Now", use_container_width=True):
-                st.warning("Manual scraping not yet implemented. Use: `python src/main.py`")
-
-            if st.button("🎨 Generate Pending Replies", use_container_width=True):
-                st.warning("Reply generation not yet implemented.")
-
-        st.markdown("---")
-
-        # Recent activity chart
-        st.subheader("📈 Recent Activity (Last 7 Days)")
-
-        week_ago = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
-        recent_leads = supabase.table('leads').select('*')\
-            .gte('scraped_date', week_ago).execute()
-
-        if recent_leads.data:
-            df = pd.DataFrame(recent_leads.data)
-
             # Leads by date
             leads_by_date = df.groupby('scraped_date').size().reset_index(name='count')
-            fig1 = px.line(leads_by_date, x='scraped_date', y='count',
-                          title='Leads Over Time', markers=True)
-            fig1.update_layout(xaxis_title='Date', yaxis_title='Leads')
-            fig1.update_traces(line_color='#8b4513')
+            fig1 = px.area(leads_by_date, x='scraped_date', y='count',
+                          title='Leads Over Time',
+                          color_discrete_sequence=['#951B1E'])
+            fig1.update_layout(
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font_family='Libre Baskerville',
+                title_font_family='Garet',
+                title_font_color='#3E4938',
+                xaxis_title='',
+                yaxis_title='Leads'
+            )
             st.plotly_chart(fig1, use_container_width=True)
 
-            # Pain type and readiness distribution
-            col1, col2 = st.columns(2)
+        with col2:
+            # Pain type distribution
+            pain_dist = df['intent_type'].value_counts().reset_index()
+            pain_dist.columns = ['Pain Type', 'Count']
+            fig2 = px.pie(pain_dist, names='Pain Type', values='Count',
+                         title='Leads by Type',
+                         color_discrete_sequence=['#951B1E', '#3E4938', '#999999', '#C07F00', '#5A4A42'])
+            fig2.update_layout(
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font_family='Libre Baskerville',
+                title_font_family='Garet',
+                title_font_color='#3E4938'
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+    else:
+        st.info("📊 No recent data. Run the scraper to collect leads!")
 
-            with col1:
-                pain_dist = df['intent_type'].value_counts().reset_index()
-                pain_dist.columns = ['Pain Type', 'Count']
-                fig2 = px.pie(pain_dist, names='Pain Type', values='Count',
-                             title='Leads by Pain Type',
-                             color_discrete_sequence=px.colors.sequential.Oranges)
-                st.plotly_chart(fig2, use_container_width=True)
-
-            with col2:
-                fig3 = px.histogram(df, x='readiness_score',
-                                   title='Readiness Score Distribution',
-                                   nbins=20, color_discrete_sequence=['#8b4513'])
-                fig3.update_layout(xaxis_title='Readiness Score', yaxis_title='Count')
-                st.plotly_chart(fig3, use_container_width=True)
-        else:
-            st.info("📊 No recent data. Run the scraper to collect leads!")
-
-    except Exception as e:
-        st.error(f"Error loading dashboard: {e}")
 
 # ================================
-# PAGE: PENDING APPROVALS (Airtable-style Sheet)
+# PAGE: PENDING APPROVALS
 # ================================
 elif page == "✅ Pending Approvals":
-    st.markdown('<h1 class="main-header">✅ Pending Approvals</h1>', unsafe_allow_html=True)
+    st.markdown("# Pending Approvals")
+    st.markdown("Review and approve AI-generated replies")
 
-    try:
-        # Get current teacher
-        teacher = auth.get_current_teacher()
+    teacher = auth.get_current_teacher()
 
-        # Fetch pending approvals with full context
-        pending_query = supabase.table('pending_replies')\
-            .select('*, conversation_threads(*)')\
-            .eq('approval_status', 'pending')\
-            .order('generated_at', desc=True)
+    # Check OAuth status
+    oauth_enabled = is_oauth_configured()
 
-        pending = pending_query.execute()
+    if oauth_enabled:
+        st.success("✅ YouTube OAuth configured - Replies will post automatically!")
+    else:
+        st.warning("⚠️ YouTube OAuth not configured - Run `python setup_youtube_oauth.py` to enable auto-posting")
 
-        if not pending.data:
-            st.success("🎉 All caught up! No pending approvals.")
-            st.balloons()
-        else:
-            st.info(f"📬 **{len(pending.data)} replies** awaiting your approval")
+    # Fetch pending approvals
+    pending = supabase.table('pending_replies')\
+        .select('*, conversation_threads(*)')\
+        .eq('approval_status', 'pending')\
+        .order('generated_at', desc=True)\
+        .execute()
 
-            # Filters
-            with st.expander("🔍 Filters & Sorting"):
+    if not pending.data:
+        st.success("🎉 All caught up! No pending approvals.")
+    else:
+        st.info(f"📬 **{len(pending.data)} replies** awaiting your approval")
+
+        # Approval Cards
+        for i, reply in enumerate(pending.data, 1):
+            thread = reply.get('conversation_threads', {}) or {}
+
+            with st.expander(
+                f"**#{i}** | {reply['lead_name']} | "
+                f"{thread.get('pain_type', 'unknown').replace('_', ' ').title()} | "
+                f"Readiness: {thread.get('readiness_score', 0)}%",
+                expanded=(i == 1)
+            ):
+                col1, col2 = st.columns([3, 1])
+
+                with col1:
+                    st.markdown(f"### {reply['lead_name']}")
+                    st.markdown("**Their Comment:**")
+                    st.info(reply['their_last_message'])
+
+                with col2:
+                    st.markdown(get_pain_badge(thread.get('pain_type', 'unknown')), unsafe_allow_html=True)
+                    st.metric("Readiness", f"{thread.get('readiness_score', 0)}%")
+                    st.metric("Stage", thread.get('conversation_stage', 0))
+
+                    if thread.get('comment_url'):
+                        st.link_button("🔗 View on YouTube", thread['comment_url'])
+
+                st.markdown("---")
+
+                # Editable Reply
+                st.markdown("**🤖 AI Generated Reply:**")
+                edited_reply = st.text_area(
+                    "Edit if needed:",
+                    value=reply['ai_generated_reply'],
+                    height=200,
+                    key=f"reply_{reply['id']}"
+                )
+
+                st.markdown("---")
+
+                # Action Buttons
                 col1, col2, col3, col4 = st.columns(4)
 
                 with col1:
-                    pain_filter = st.multiselect(
-                        "Pain Type",
-                        options=['spiritual', 'mental_pain', 'discipline', 'physical_pain', 'practice_aligned'],
-                        default=[]
-                    )
+                    if st.button("✅ Approve & Post", key=f"approve_{reply['id']}", use_container_width=True):
+                        # Capture edit for learning
+                        original_text = reply['ai_generated_reply']
+
+                        if edited_reply != original_text:
+                            # Teacher edited - save for learning
+                            supabase.table('teacher_edits').insert({
+                                'teacher_id': teacher['id'],
+                                'pending_reply_id': reply['id'],
+                                'original_ai_text': original_text,
+                                'edited_text': edited_reply,
+                                'edit_timestamp': datetime.now().isoformat(),
+                                'lead_context': {
+                                    'pain_type': thread.get('pain_type'),
+                                    'readiness_score': thread.get('readiness_score'),
+                                    'conversation_stage': thread.get('conversation_stage')
+                                }
+                            }).execute()
+                            logger.info(f"Captured edit for teacher learning: {teacher['teacher_name']}")
+
+                        # Update reply with edited text
+                        supabase.table('pending_replies').update({
+                            'ai_generated_reply': edited_reply
+                        }).eq('id', reply['id']).execute()
+
+                        # Check if OAuth is configured
+                        if oauth_enabled:
+                            # Auto-post to YouTube
+                            with st.spinner("🚀 Posting to YouTube..."):
+                                try:
+                                    poster = YouTubePoster(supabase)
+
+                                    # Extract comment ID
+                                    comment_url = thread.get('comment_url', '')
+                                    comment_id = poster.extract_comment_id(comment_url)
+
+                                    if not comment_id:
+                                        st.error(f"❌ Could not extract comment ID from: {comment_url}")
+                                    else:
+                                        # Post the reply
+                                        result = poster.post_comment_reply(comment_id, edited_reply)
+
+                                        if result['status'] == 'success':
+                                            # Mark as posted
+                                            supabase.table('pending_replies').update({
+                                                'approval_status': 'posted',
+                                                'approved_at': datetime.now().isoformat(),
+                                                'posted_at': result['posted_at']
+                                            }).eq('id', reply['id']).execute()
+
+                                            # Update thread
+                                            supabase.table('conversation_threads').update({
+                                                'conversation_stage': thread.get('conversation_stage', 0) + 1,
+                                                'last_reply_date': datetime.now().strftime('%Y-%m-%d')
+                                            }).eq('id', thread.get('id')).execute()
+
+                                            st.success("✅ Reply posted to YouTube and verified visible!")
+                                            st.balloons()
+
+                                        elif result['status'] == 'posted_unverified':
+                                            # Posted but not verified visible
+                                            supabase.table('pending_replies').update({
+                                                'approval_status': 'approved',
+                                                'approved_at': datetime.now().isoformat(),
+                                            }).eq('id', reply['id']).execute()
+
+                                            st.warning(f"⚠️ Posted but not verified: {result.get('error')}")
+                                            st.info("Reply may be held for review. Please manually check YouTube.")
+                                            st.info("👉 Go to 'Approved Replies' to post manually if needed")
+
+                                        else:
+                                            # Mark as approved but not posted
+                                            supabase.table('pending_replies').update({
+                                                'approval_status': 'approved',
+                                                'approved_at': datetime.now().isoformat()
+                                            }).eq('id', reply['id']).execute()
+
+                                            st.error(f"❌ Failed to post: {result.get('error', 'Unknown error')}")
+                                            st.info("👉 Go to 'Approved Replies' to post manually")
+
+                                except Exception as e:
+                                    st.error(f"❌ Error: {e}")
+                                    # Mark as approved
+                                    supabase.table('pending_replies').update({
+                                        'approval_status': 'approved',
+                                        'approved_at': datetime.now().isoformat()
+                                    }).eq('id', reply['id']).execute()
+                                    st.info("👉 Moved to 'Approved Replies' for manual posting")
+
+                        else:
+                            # OAuth not configured - mark as approved for manual posting
+                            supabase.table('pending_replies').update({
+                                'approval_status': 'approved',
+                                'approved_at': datetime.now().isoformat()
+                            }).eq('id', reply['id']).execute()
+
+                            st.success("✅ Reply approved!")
+                            st.info("👉 Go to 'Approved Replies' to post it manually")
+
+                        st.rerun()
 
                 with col2:
-                    min_readiness = st.slider("Min Readiness", 0, 100, 0)
+                    if st.button("❌ Reject", key=f"reject_{reply['id']}", use_container_width=True):
+                        supabase.table('pending_replies').update({
+                            'approval_status': 'rejected'
+                        }).eq('id', reply['id']).execute()
+                        st.warning("❌ Reply rejected")
+                        st.rerun()
 
                 with col3:
-                    stage_filter = st.multiselect(
-                        "Stage",
-                        options=[0, 1, 2, 3, 4],
-                        default=[]
-                    )
+                    if st.button("💾 Save Changes", key=f"save_{reply['id']}", use_container_width=True):
+                        supabase.table('pending_replies').update({
+                            'ai_generated_reply': edited_reply
+                        }).eq('id', reply['id']).execute()
+                        st.success("💾 Changes saved!")
 
                 with col4:
-                    sort_by = st.selectbox(
-                        "Sort by",
-                        options=['Date (Newest)', 'Date (Oldest)', 'Readiness (High)', 'Readiness (Low)']
-                    )
+                    if st.button("⏭️ Skip", key=f"skip_{reply['id']}", use_container_width=True):
+                        st.info("Skipped to next")
 
-            st.markdown("---")
 
-            # Approval Sheet (Table-like view)
-            for i, reply in enumerate(pending.data, 1):
+# ================================
+# PAGE: APPROVED REPLIES
+# ================================
+elif page == "🚀 Approved Replies":
+    st.markdown("# Approved Replies")
+    st.markdown("Post approved replies to YouTube")
+
+    teacher = auth.get_current_teacher()
+
+    # Tabs for different statuses
+    tab1, tab2 = st.tabs(["✅ Ready to Post", "🚀 Already Posted"])
+
+    with tab1:
+        # Fetch approved but not yet posted replies
+        approved = supabase.table('pending_replies')\
+            .select('*, conversation_threads(*)')\
+            .eq('approval_status', 'approved')\
+            .order('approved_at', desc=True)\
+            .execute()
+
+        if not approved.data:
+            st.info("No approved replies waiting to be posted.")
+        else:
+            st.success(f"✅ **{len(approved.data)} approved replies** ready to post")
+
+            for i, reply in enumerate(approved.data, 1):
                 thread = reply.get('conversation_threads', {}) or {}
 
-                # Apply filters
-                pain_type = thread.get('pain_type', '')
-                readiness = thread.get('readiness_score', 0)
-                stage = thread.get('conversation_stage', 0)
-
-                if pain_filter and pain_type not in pain_filter:
-                    continue
-                if readiness < min_readiness:
-                    continue
-                if stage_filter and stage not in stage_filter:
-                    continue
-
-                # Approval card (expandable)
                 with st.expander(
                     f"**#{i}** | {reply['lead_name']} | "
-                    f"{pain_type.replace('_', ' ').title()} | "
-                    f"Readiness: {readiness}% | Stage: {stage}",
+                    f"Approved {format_timestamp(reply.get('approved_at'))}",
                     expanded=(i == 1)
                 ):
-                    # Header row
                     col1, col2 = st.columns([3, 1])
 
                     with col1:
                         st.markdown(f"### {reply['lead_name']}")
 
-                    with col2:
-                        st.markdown(get_status_badge('pending'), unsafe_allow_html=True)
-                        st.markdown(get_pain_badge(pain_type), unsafe_allow_html=True)
-
-                    st.markdown("---")
-
-                    # Context section
-                    col1, col2 = st.columns([2, 1])
-
-                    with col1:
-                        st.markdown("**💬 Their Last Message:**")
+                        st.markdown("**Their Comment:**")
                         st.info(reply['their_last_message'])
 
-                        # Show conversation history if stage > 0
-                        if stage > 0 and thread.get('full_history'):
-                            with st.expander("📜 View Full Conversation History"):
-                                st.text_area(
-                                    "",
-                                    value=thread['full_history'],
-                                    height=200,
-                                    disabled=True,
-                                    key=f"history_{reply['id']}"
-                                )
+                        st.markdown("**Your Approved Reply:**")
+                        st.success(reply['ai_generated_reply'])
 
                     with col2:
-                        st.markdown("**📊 Context:**")
-                        st.metric("Stage", stage)
-                        st.metric("Readiness", f"{readiness}%")
-                        st.write(f"**Pain Type:** {pain_type.replace('_', ' ').title()}")
+                        st.markdown(get_pain_badge(thread.get('pain_type', 'unknown')), unsafe_allow_html=True)
+                        st.metric("Readiness", f"{thread.get('readiness_score', 0)}%")
 
-                        # Resources shared
-                        if thread.get('resources_shared'):
-                            st.write("**Resources Shared:**")
-                            st.write(thread['resources_shared'])
+                        st.markdown("**Post to YouTube:**")
 
-                        # Links
                         if thread.get('comment_url'):
-                            st.link_button("🔗 YouTube Comment", thread['comment_url'])
-                        if thread.get('video_url'):
-                            st.link_button("🎥 Video", thread['video_url'])
+                            st.link_button("🔗 Open YouTube Comment", thread['comment_url'], use_container_width=True)
+
+                            st.markdown("---")
+
+                            # Copy button for reply text
+                            st.text_area(
+                                "Copy this reply:",
+                                value=reply['ai_generated_reply'],
+                                height=150,
+                                key=f"copy_{reply['id']}"
+                            )
+
+                            st.caption("👆 Copy the reply above, then click the YouTube link and paste it")
 
                     st.markdown("---")
 
-                    # Editable reply section
-                    st.markdown("**🤖 AI Generated Reply:**")
-                    edited_reply = st.text_area(
-                        "Edit reply if needed:",
-                        value=reply['ai_generated_reply'],
-                        height=200,
-                        key=f"reply_{reply['id']}",
-                        help="You can edit the AI-generated reply before approving"
-                    )
-
-                    # Rating section
-                    st.markdown("**⭐ Rate this reply (optional):**")
+                    # Mark as posted button
                     col1, col2, col3 = st.columns(3)
 
                     with col1:
-                        rating = st.select_slider(
-                            "Quality",
-                            options=[1, 2, 3, 4, 5],
-                            value=3,
-                            key=f"rating_{reply['id']}",
-                            help="How good is this AI reply?"
-                        )
+                        if st.button("✅ Mark as Posted", key=f"mark_posted_{reply['id']}", use_container_width=True):
+                            supabase.table('pending_replies').update({
+                                'approval_status': 'posted',
+                                'posted_at': datetime.now().isoformat()
+                            }).eq('id', reply['id']).execute()
+
+                            # Update thread stage
+                            supabase.table('conversation_threads').update({
+                                'conversation_stage': thread.get('conversation_stage', 0) + 1,
+                                'last_reply_date': datetime.now().strftime('%Y-%m-%d')
+                            }).eq('id', thread.get('id')).execute()
+
+                            st.success("✅ Marked as posted!")
+                            st.rerun()
 
                     with col2:
-                        conversion_likelihood = st.slider(
-                            "Conversion %",
-                            0, 100, 50,
-                            key=f"conversion_{reply['id']}",
-                            help="Likelihood this will convert the lead"
-                        )
+                        if st.button("🔙 Back to Pending", key=f"back_pending_{reply['id']}", use_container_width=True):
+                            supabase.table('pending_replies').update({
+                                'approval_status': 'pending'
+                            }).eq('id', reply['id']).execute()
+                            st.info("Moved back to pending")
+                            st.rerun()
 
                     with col3:
-                        notes = st.text_input(
-                            "Your notes",
-                            key=f"notes_{reply['id']}",
-                            placeholder="Optional feedback..."
-                        )
+                        if st.button("❌ Cancel", key=f"cancel_{reply['id']}", use_container_width=True):
+                            supabase.table('pending_replies').update({
+                                'approval_status': 'rejected'
+                            }).eq('id', reply['id']).execute()
+                            st.warning("Cancelled")
+                            st.rerun()
 
-                    st.markdown("---")
+    with tab2:
+        # Fetch posted replies
+        posted = supabase.table('pending_replies')\
+            .select('*, conversation_threads(*)')\
+            .eq('approval_status', 'posted')\
+            .order('posted_at', desc=True)\
+            .limit(50)\
+            .execute()
 
-                    # Action buttons
-                    col1, col2, col3, col4 = st.columns(4)
+        if not posted.data:
+            st.info("No posted replies yet.")
+        else:
+            st.success(f"🚀 **{len(posted.data)} replies** posted to YouTube")
+
+            for i, reply in enumerate(posted.data, 1):
+                thread = reply.get('conversation_threads', {}) or {}
+
+                with st.expander(
+                    f"**#{i}** | {reply['lead_name']} | "
+                    f"Posted {format_timestamp(reply.get('posted_at'))}"
+                ):
+                    col1, col2 = st.columns([3, 1])
 
                     with col1:
-                        if st.button("✅ Approve & Post", key=f"approve_{reply['id']}", use_container_width=True):
-                            # Update reply with edits and approval
-                            supabase.table('pending_replies').update({
-                                'ai_generated_reply': edited_reply,
-                                'approval_status': 'approved',
-                                'approved_at': datetime.now().isoformat(),
-                                'your_notes': notes if notes else reply.get('your_notes')
-                            }).eq('id', reply['id']).execute()
-
-                            st.success("✅ Reply approved!")
-                            st.info("🚀 Auto-posting to YouTube... (not yet implemented)")
-
-                            # TODO: Call youtube_poster.post_comment_reply()
-
-                            st.rerun()
+                        st.markdown(f"### {reply['lead_name']}")
+                        st.markdown("**Reply Posted:**")
+                        st.success(reply['ai_generated_reply'])
 
                     with col2:
-                        if st.button("❌ Reject", key=f"reject_{reply['id']}", use_container_width=True):
-                            supabase.table('pending_replies').update({
-                                'approval_status': 'rejected',
-                                'your_notes': notes if notes else 'Rejected by teacher'
-                            }).eq('id', reply['id']).execute()
+                        st.markdown(get_status_badge('posted'), unsafe_allow_html=True)
+                        st.markdown(get_pain_badge(thread.get('pain_type', 'unknown')), unsafe_allow_html=True)
 
-                            st.warning("❌ Reply rejected")
-                            st.rerun()
+                        if thread.get('comment_url'):
+                            st.link_button("🔗 View on YouTube", thread['comment_url'])
 
-                    with col3:
-                        if st.button("💾 Save Changes", key=f"save_{reply['id']}", use_container_width=True):
-                            supabase.table('pending_replies').update({
-                                'ai_generated_reply': edited_reply,
-                                'your_notes': notes if notes else reply.get('your_notes')
-                            }).eq('id', reply['id']).execute()
-
-                            st.success("💾 Changes saved!")
-
-                    with col4:
-                        if st.button("⏭️ Skip", key=f"skip_{reply['id']}", use_container_width=True):
-                            st.info("Skipped to next")
-
-    except Exception as e:
-        st.error(f"Error loading approvals: {e}")
-        st.exception(e)
 
 # ================================
 # PAGE: CONVERSATIONS
 # ================================
 elif page == "💬 Conversations":
-    st.markdown('<h1 class="main-header">💬 Active Conversations</h1>', unsafe_allow_html=True)
+    st.markdown("# Active Conversations")
+    st.markdown("View ongoing conversation threads with leads")
 
-    try:
-        threads = supabase.table('conversation_threads')\
-            .select('*')\
-            .eq('status', 'active')\
-            .order('updated_at', desc=True)\
-            .execute()
+    threads = supabase.table('conversation_threads')\
+        .select('*')\
+        .eq('status', 'active')\
+        .order('updated_at', desc=True)\
+        .execute()
 
-        if not threads.data:
-            st.info("No active conversations yet. Leads will appear here once they engage.")
-        else:
-            st.success(f"💬 {len(threads.data)} active conversations")
+    if not threads.data:
+        st.info("No active conversations yet")
+    else:
+        st.success(f"💬 {len(threads.data)} active conversations")
 
-            for thread in threads.data:
-                with st.expander(
-                    f"**{thread['comment_author']}** | Stage {thread['conversation_stage']} | "
-                    f"{thread.get('pain_type', 'N/A')} | Readiness: {thread.get('readiness_score', 0)}%"
-                ):
-                    col1, col2 = st.columns([3, 1])
+        for thread in threads.data:
+            with st.expander(
+                f"**{thread['comment_author']}** | "
+                f"Stage {thread['conversation_stage']} | "
+                f"Readiness: {thread.get('readiness_score', 0)}%"
+            ):
+                col1, col2 = st.columns([3, 1])
 
-                    with col1:
-                        st.markdown("**Original Comment:**")
-                        st.write(thread['original_comment'])
+                with col1:
+                    st.markdown("**Original Comment:**")
+                    st.write(thread['original_comment'])
 
+                    if thread.get('full_history'):
                         st.markdown("**Conversation History:**")
-                        st.text_area(
-                            "",
-                            value=thread.get('full_history', 'No history yet'),
-                            height=200,
-                            disabled=True,
-                            key=f"thread_history_{thread['id']}"
-                        )
+                        st.text_area("", value=thread['full_history'], height=200, disabled=True, key=f"history_{thread['id']}")
 
-                        if thread.get('ai_context_summary'):
-                            st.markdown("**AI Summary:**")
-                            st.info(thread['ai_context_summary'])
-
-                    with col2:
-                        st.metric("Stage", thread['conversation_stage'])
-                        st.metric("Readiness", f"{thread['readiness_score']}%")
-                        st.write(f"**Status:** {thread['status']}")
-                        st.write(f"**Pain:** {thread.get('pain_type', 'N/A')}")
-
-                        if thread.get('last_reply_date'):
-                            st.write(f"**Last Reply:** {thread['last_reply_date']}")
-
-                        if thread.get('resources_shared'):
-                            st.write(f"**Resources:** {thread['resources_shared']}")
+                with col2:
+                    st.markdown(get_pain_badge(thread.get('pain_type', 'unknown')), unsafe_allow_html=True)
+                    st.metric("Stage", thread['conversation_stage'])
+                    st.metric("Readiness", f"{thread['readiness_score']}%")
 
                     if thread.get('comment_url'):
-                        st.link_button("🔗 View on YouTube", thread['comment_url'])
+                        st.link_button("🔗 YouTube", thread['comment_url'])
 
-    except Exception as e:
-        st.error(f"Error loading conversations: {e}")
 
 # ================================
-# PAGE: LEADS
+# PAGE: ALL LEADS
 # ================================
-elif page == "📋 Leads":
-    st.markdown('<h1 class="main-header">📋 All Leads</h1>', unsafe_allow_html=True)
+elif page == "📋 All Leads":
+    st.markdown("# All Leads")
+    st.markdown("View and filter qualified leads")
 
-    try:
-        # Filters
-        col1, col2, col3 = st.columns(3)
+    # Filters
+    col1, col2, col3 = st.columns(3)
 
-        with col1:
-            intent_filter = st.multiselect(
-                "Pain Type",
-                options=['spiritual', 'mental_pain', 'discipline', 'physical_pain', 'practice_aligned', 'low_intent'],
-                default=['spiritual', 'mental_pain', 'discipline', 'practice_aligned']
-            )
+    with col1:
+        intent_filter = st.multiselect(
+            "Pain Type",
+            options=['spiritual', 'mental_pain', 'discipline', 'physical_pain', 'practice_aligned', 'low_intent'],
+            default=['spiritual', 'mental_pain', 'discipline', 'practice_aligned']
+        )
 
-        with col2:
-            min_readiness = st.slider("Min Readiness", 0, 100, 50)
+    with col2:
+        min_readiness = st.slider("Min Readiness", 0, 100, 50)
+        st.caption(f"🎯 Selected: {min_readiness}%")
 
-        with col3:
-            days_back = st.selectbox("Days back", [7, 14, 30, 90], index=0)
+    with col3:
+        days_back = st.selectbox("Time Period", [7, 14, 30, 90, 365, "All Time"], index=5)
 
-        # Fetch leads
+    # Fetch leads
+    if days_back == "All Time":
+        query = supabase.table('leads')\
+            .select('*')\
+            .gte('readiness_score', min_readiness)
+    else:
         cutoff_date = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%d')
-
         query = supabase.table('leads')\
             .select('*')\
             .gte('scraped_date', cutoff_date)\
             .gte('readiness_score', min_readiness)
 
-        if intent_filter:
-            query = query.in_('intent_type', intent_filter)
+    if intent_filter:
+        query = query.in_('intent_type', intent_filter)
 
-        leads = query.order('created_at', desc=True).execute()
+    leads = query.order('created_at', desc=True).execute()
 
-        if leads.data:
-            st.success(f"Found {len(leads.data)} leads")
+    if leads.data:
+        st.success(f"Found {len(leads.data)} leads")
 
-            df = pd.DataFrame(leads.data)
+        df = pd.DataFrame(leads.data)
+        display_cols = ['name', 'intent_type', 'pain_intensity', 'readiness_score', 'scraped_date', 'comment']
+        display_df = df[[c for c in display_cols if c in df.columns]]
 
-            # Display table
-            display_df = df[['name', 'intent_type', 'pain_intensity', 'readiness_score', 'practice_mention', 'scraped_date']]
-            display_df.columns = ['Name', 'Pain Type', 'Pain (0-10)', 'Readiness %', 'Practice', 'Date']
+        st.dataframe(display_df, use_container_width=True, height=600)
 
-            st.dataframe(display_df, use_container_width=True, height=600)
+        # Export
+        csv = df.to_csv(index=False)
+        st.download_button(
+            "📥 Download CSV",
+            data=csv,
+            file_name=f"leads_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv"
+        )
+    else:
+        st.info("No leads found matching filters")
 
-            # Export
-            csv = df.to_csv(index=False)
-            st.download_button(
-                "📥 Download CSV",
-                data=csv,
-                file_name=f"leads_{datetime.now().strftime('%Y%m%d')}.csv",
-                mime="text/csv"
-            )
-        else:
-            st.info("No leads found matching filters")
-
-    except Exception as e:
-        st.error(f"Error loading leads: {e}")
 
 # ================================
 # PAGE: TEACHERS
 # ================================
 elif page == "👥 Teachers":
-    st.markdown('<h1 class="main-header">👥 Teachers</h1>', unsafe_allow_html=True)
+    st.markdown("# Teachers")
+    st.markdown("Manage teacher profiles")
 
-    try:
-        teachers = supabase.table('teacher_profiles').select('*').execute()
+    teachers = supabase.table('teacher_profiles').select('*').execute()
 
-        if teachers.data:
-            for t in teachers.data:
-                with st.expander(f"**{t['teacher_name']}** {'✅' if t['active'] else '❌'}"):
-                    col1, col2 = st.columns(2)
+    if teachers.data:
+        for t in teachers.data:
+            with st.expander(f"**{t['teacher_name']}** {'✅' if t['active'] else '❌'}"):
+                col1, col2 = st.columns(2)
 
-                    with col1:
-                        st.write(f"**Email:** {t['email']}")
-                        st.write(f"**Role:** {t.get('role', 'N/A')}")
-                        st.write(f"**Tone:** {t.get('tone_preference', 'N/A')}")
+                with col1:
+                    st.write(f"**Email:** {t['email']}")
+                    st.write(f"**Role:** {t.get('role', 'N/A')}")
+                    st.write(f"**Tone:** {t.get('tone_preference', 'N/A')}")
 
-                    with col2:
-                        st.write(f"**Contact:** {t.get('contact_number', 'N/A')}")
-                        st.write(f"**Daily Limit:** {t.get('daily_reply_limit', 10)}")
-                        st.write(f"**Status:** {'Active' if t['active'] else 'Inactive'}")
+                with col2:
+                    st.write(f"**Contact:** {t.get('contact_number', 'N/A')}")
+                    st.write(f"**Daily Limit:** {t.get('daily_reply_limit', 10)}")
+                    st.write(f"**Status:** {'Active' if t['active'] else 'Inactive'}")
 
-        # Add new teacher
-        st.markdown("---")
-        st.subheader("➕ Add New Teacher")
+    st.markdown("---")
+    st.markdown("### Add New Teacher")
 
-        with st.form("add_teacher"):
-            name = st.text_input("Name*")
-            email = st.text_input("Email*")
-            contact = st.text_input("Contact")
-            role = st.text_input("Role")
-            experience = st.text_area("Experience")
-            tone = st.selectbox("Tone", ["Compassionate", "Casual", "Formal"])
-            sign_off = st.text_area("Sign-off", value="Blessings,\n[Name]")
-            daily_limit = st.number_input("Daily Limit", 1, 50, 10)
-            active = st.checkbox("Active", value=True)
+    with st.form("add_teacher"):
+        name = st.text_input("Name*")
+        email = st.text_input("Email*")
+        contact = st.text_input("Contact")
+        role = st.text_input("Role")
+        tone = st.selectbox("Tone", ["Compassionate", "Casual", "Formal"])
+        daily_limit = st.number_input("Daily Limit", 1, 50, 10)
+        active = st.checkbox("Active", value=True)
 
-            if st.form_submit_button("Add"):
-                if name and email:
-                    supabase.table('teacher_profiles').insert({
-                        'teacher_name': name,
-                        'email': email,
-                        'contact_number': contact,
-                        'role': role,
-                        'practice_experience': experience,
-                        'tone_preference': tone,
-                        'sign_off': sign_off,
-                        'daily_reply_limit': daily_limit,
-                        'active': active
-                    }).execute()
+        if st.form_submit_button("Add Teacher"):
+            if name and email:
+                supabase.table('teacher_profiles').insert({
+                    'teacher_name': name,
+                    'email': email,
+                    'contact_number': contact,
+                    'role': role,
+                    'tone_preference': tone,
+                    'daily_reply_limit': daily_limit,
+                    'active': active
+                }).execute()
+                st.success(f"✅ Added {name}")
+                st.rerun()
+            else:
+                st.error("Name and email required")
 
-                    st.success(f"✅ Added {name}")
-                    st.rerun()
-                else:
-                    st.error("Name and email required")
-
-    except Exception as e:
-        st.error(f"Error: {e}")
 
 # ================================
 # PAGE: RESOURCES
 # ================================
 elif page == "📚 Resources":
-    st.markdown('<h1 class="main-header">📚 Resources</h1>', unsafe_allow_html=True)
+    st.markdown("# Resources")
+    st.markdown("Manage Isha Foundation resources")
 
-    try:
-        resources = supabase.table('resources').select('*').order('times_shared', desc=True).execute()
+    resources = supabase.table('resources').select('*').order('times_shared', desc=True).execute()
 
-        if resources.data:
-            for r in resources.data:
-                with st.expander(f"**{r['resource_name']}** {'✅' if r['active'] else '❌'} | Shared: {r['times_shared']}x"):
-                    col1, col2 = st.columns([2, 1])
+    if resources.data:
+        for r in resources.data:
+            with st.expander(f"**{r['resource_name']}** {'✅' if r['active'] else '❌'} | Shared: {r['times_shared']}x"):
+                col1, col2 = st.columns([2, 1])
 
-                    with col1:
-                        st.write(f"**Link:** {r.get('resource_link', 'N/A')}")
-                        st.write(f"**Description:** {r.get('description', 'N/A')}")
-                        st.write(f"**When to Share:** {r.get('when_to_share', 'N/A')}")
+                with col1:
+                    st.write(f"**Link:** {r.get('resource_link', 'N/A')}")
+                    st.write(f"**Description:** {r.get('description', 'N/A')}")
+                    st.write(f"**When to Share:** {r.get('when_to_share', 'N/A')}")
 
-                    with col2:
-                        st.write(f"**Type:** {r.get('resource_type', 'N/A')}")
-                        st.write(f"**Pain Types:** {', '.join(r.get('pain_types', []))}")
-                        st.write(f"**Min Readiness:** {r.get('minimum_readiness_score', 0)}%")
+                with col2:
+                    st.write(f"**Type:** {r.get('resource_type', 'N/A')}")
+                    st.write(f"**Pain Types:** {', '.join(r.get('pain_types', []))}")
+                    st.write(f"**Min Readiness:** {r.get('minimum_readiness_score', 0)}%")
 
-        # Add resource
-        st.markdown("---")
-        st.subheader("➕ Add Resource")
-
-        with st.form("add_resource"):
-            name = st.text_input("Name*")
-            link = st.text_input("Link")
-            description = st.text_area("Description")
-            when = st.text_area("When to Share")
-            rtype = st.selectbox("Type", ["practice", "video", "app", "program", "article"])
-            ptypes = st.multiselect("Pain Types", ['spiritual', 'mental_pain', 'discipline', 'physical_pain', 'general'])
-            min_r = st.slider("Min Readiness", 0, 100, 60)
-            active = st.checkbox("Active", value=True)
-
-            if st.form_submit_button("Add"):
-                if name:
-                    supabase.table('resources').insert({
-                        'resource_name': name,
-                        'resource_link': link,
-                        'description': description,
-                        'when_to_share': when,
-                        'resource_type': rtype,
-                        'pain_types': ptypes,
-                        'minimum_readiness_score': min_r,
-                        'active': active,
-                        'times_shared': 0
-                    }).execute()
-
-                    st.success(f"✅ Added '{name}'")
-                    st.rerun()
-                else:
-                    st.error("Name required")
-
-    except Exception as e:
-        st.error(f"Error: {e}")
-
-# ================================
-# PAGE: ANALYTICS
-# ================================
-elif page == "📈 Analytics":
-    st.markdown('<h1 class="main-header">📈 Analytics</h1>', unsafe_allow_html=True)
-
-    st.info("🚧 Advanced analytics coming soon!")
-
-    st.markdown("""
-    **Planned features:**
-    - Lead conversion funnel
-    - Resource effectiveness
-    - Teacher performance metrics
-    - Time-based trends
-    - Engagement patterns
-    """)
 
 # ================================
 # PAGE: MY PROFILE
 # ================================
 elif page == "👤 My Profile":
-    st.markdown('<h1 class="main-header">👤 My Profile</h1>', unsafe_allow_html=True)
+    st.markdown("# My Profile")
+
+    teacher = auth.get_current_teacher()
+
+    st.markdown(f"### Welcome, {teacher['teacher_name']}!")
+
+    with st.form("edit_profile"):
+        st.markdown("#### Edit Your Profile")
+
+        name = st.text_input("Name", value=teacher.get('teacher_name', ''))
+        email_display = st.text_input("Email (read-only)", value=teacher.get('email', ''), disabled=True)
+        contact = st.text_input("Contact", value=teacher.get('contact_number', '') or '')
+        role = st.text_input("Role", value=teacher.get('role', '') or '')
+        tone = st.selectbox(
+            "Tone",
+            options=["Compassionate", "Casual", "Formal"],
+            index=["Compassionate", "Casual", "Formal"].index(teacher.get('tone_preference', 'Compassionate'))
+        )
+        sign_off = st.text_area("Sign-off", value=teacher.get('sign_off', '') or '')
+        daily_limit = st.number_input("Daily Reply Limit", 1, 50, teacher.get('daily_reply_limit', 10))
+
+        if st.form_submit_button("💾 Save Changes"):
+            supabase.table('teacher_profiles').update({
+                'teacher_name': name,
+                'contact_number': contact,
+                'role': role,
+                'tone_preference': tone,
+                'sign_off': sign_off,
+                'daily_reply_limit': daily_limit
+            }).eq('id', teacher['id']).execute()
+
+            st.success("✅ Profile updated!")
+            st.session_state.teacher_info = supabase.table('teacher_profiles')\
+                .select('*').eq('id', teacher['id']).single().execute().data
+            st.rerun()
+
+    st.markdown("---")
+
+    # Teacher Learning Section
+    st.markdown("### 🎓 AI Learning from Your Edits")
 
     try:
-        teacher = auth.get_current_teacher()
-
-        st.subheader(f"Welcome, {teacher['teacher_name']}!")
-
-        # Profile editing form
-        with st.form("edit_profile"):
-            st.markdown("### Edit Your Profile")
-
-            name = st.text_input("Name", value=teacher.get('teacher_name', ''))
-            email_display = st.text_input("Email (read-only)", value=teacher.get('email', ''), disabled=True)
-            contact = st.text_input("Contact", value=teacher.get('contact_number', '') or '')
-            role = st.text_input("Role", value=teacher.get('role', '') or '')
-            experience = st.text_area("Experience", value=teacher.get('practice_experience', '') or '')
-            tone = st.selectbox(
-                "Tone Preference",
-                options=["Compassionate", "Casual", "Formal"],
-                index=["Compassionate", "Casual", "Formal"].index(teacher.get('tone_preference', 'Compassionate'))
-            )
-            sign_off = st.text_area("Sign-off", value=teacher.get('sign_off', '') or '')
-            daily_limit = st.number_input("Daily Reply Limit", 1, 50, teacher.get('daily_reply_limit', 10))
-
-            if st.form_submit_button("💾 Save Changes"):
-                supabase.table('teacher_profiles').update({
-                    'teacher_name': name,
-                    'contact_number': contact,
-                    'role': role,
-                    'practice_experience': experience,
-                    'tone_preference': tone,
-                    'sign_off': sign_off,
-                    'daily_reply_limit': daily_limit
-                }).eq('id', teacher['id']).execute()
-
-                st.success("✅ Profile updated!")
-
-                # Update session
-                st.session_state.teacher_info = supabase.table('teacher_profiles')\
-                    .select('*').eq('id', teacher['id']).single().execute().data
-
-                st.rerun()
-
-        st.markdown("---")
-
-        # Personal stats
-        st.subheader("📊 My Statistics")
-
-        col1, col2, col3 = st.columns(3)
-
-        # Get teacher's stats
-        approved_count = supabase.table('pending_replies')\
+        # Fetch edit count
+        edits = supabase.table('teacher_edits')\
             .select('id', count='exact')\
-            .eq('assigned_teacher_id', teacher['id'])\
-            .eq('approval_status', 'approved')\
+            .eq('teacher_id', teacher['id'])\
             .execute()
 
-        posted_count = supabase.table('pending_replies')\
-            .select('id', count='exact')\
-            .eq('assigned_teacher_id', teacher['id'])\
-            .eq('approval_status', 'posted')\
-            .execute()
+        edit_count = edits.count or 0
+        st.metric("Total Edits Captured", edit_count)
 
-        pending_count = supabase.table('pending_replies')\
-            .select('id', count='exact')\
-            .eq('assigned_teacher_id', teacher['id'])\
-            .eq('approval_status', 'pending')\
-            .execute()
+        if edit_count >= 10:
+            learned_style = teacher.get('learned_style', {})
 
-        with col1:
-            st.metric("Approved Replies", approved_count.count or 0)
+            if learned_style:
+                col1, col2 = st.columns(2)
 
-        with col2:
-            st.metric("Posted Replies", posted_count.count or 0)
+                with col1:
+                    st.markdown("#### 📊 Your Style Profile")
 
-        with col3:
-            st.metric("Pending Reviews", pending_count.count or 0)
+                    verbosity = learned_style.get('tone_preferences', {}).get('verbosity', 'balanced')
+                    st.write(f"**Response Length:** {verbosity.replace('_', ' ').title()}")
+
+                    avg_change = learned_style.get('avg_length_change', 0)
+                    if avg_change > 0:
+                        st.write(f"**Editing Pattern:** You typically add ~{int(avg_change)} characters")
+                    else:
+                        st.write(f"**Editing Pattern:** You typically remove ~{int(abs(avg_change))} characters")
+
+                with col2:
+                    st.markdown("#### 💬 Your Common Phrases")
+                    common_phrases = teacher.get('common_phrases', [])[:10]
+
+                    if common_phrases:
+                        for phrase in common_phrases:
+                            st.caption(f"• {phrase}")
+                    else:
+                        st.info("Keep editing responses to build your phrase library!")
+
+            # Refresh learning button
+            if st.button("🔄 Refresh Learning Profile"):
+                with st.spinner("Analyzing your edits..."):
+                    from src.teacher_learning import TeacherLearner
+                    from src.database import SupabaseDatabase
+
+                    db = SupabaseDatabase()
+                    learner = TeacherLearner(db)
+                    learner.update_teacher_profile(teacher['id'])
+                    st.success("✅ Learning profile updated!")
+                    st.rerun()
+
+        elif edit_count > 0:
+            st.info(f"🎯 Edit {10 - edit_count} more responses to unlock AI learning!")
+            st.caption("The AI will learn your style and adapt future responses automatically.")
+        else:
+            st.info("💡 Start editing AI responses to train the system to match your style!")
 
     except Exception as e:
-        st.error(f"Error loading profile: {e}")
+        st.warning(f"Learning system unavailable: {e}")
+
+    st.markdown("---")
+
+    # Personal stats
+    st.markdown("### My Statistics")
+
+    col1, col2, col3 = st.columns(3)
+
+    approved = supabase.table('pending_replies')\
+        .select('id', count='exact')\
+        .eq('assigned_teacher_id', teacher['id'])\
+        .eq('approval_status', 'approved')\
+        .execute()
+
+    posted = supabase.table('pending_replies')\
+        .select('id', count='exact')\
+        .eq('assigned_teacher_id', teacher['id'])\
+        .eq('approval_status', 'posted')\
+        .execute()
+
+    pending = supabase.table('pending_replies')\
+        .select('id', count='exact')\
+        .eq('assigned_teacher_id', teacher['id'])\
+        .eq('approval_status', 'pending')\
+        .execute()
+
+    with col1:
+        st.metric("Approved Replies", approved.count or 0)
+
+    with col2:
+        st.metric("Posted Replies", posted.count or 0)
+
+    with col3:
+        st.metric("Pending Reviews", pending.count or 0)
+
 
 # ================================
 # FOOTER
 # ================================
 st.sidebar.markdown("---")
-st.sidebar.info(f"""
+st.sidebar.caption(f"""
 **System Info**
 Version: 2.0 (Supabase)
 Updated: {datetime.now().strftime('%Y-%m-%d')}

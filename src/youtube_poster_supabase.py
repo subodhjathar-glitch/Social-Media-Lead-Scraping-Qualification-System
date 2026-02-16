@@ -12,6 +12,7 @@ from googleapiclient.errors import HttpError
 
 from src.config import settings
 from src.utils import setup_logger
+from src.youtube_oauth import get_youtube_client, is_oauth_configured
 
 logger = setup_logger(__name__)
 
@@ -32,9 +33,16 @@ class YouTubePoster:
             supabase_client: Supabase client instance
         """
         self.supabase = supabase_client
-        self.youtube = None  # Will be initialized after OAuth
         self.replies_posted_today = 0
         self.last_post_time = None
+
+        # Try to initialize with OAuth automatically
+        self.youtube = get_youtube_client()
+
+        if self.youtube:
+            logger.info("✓ YouTube client initialized with OAuth credentials")
+        else:
+            logger.warning("⚠ YouTube OAuth not configured. Run setup_youtube_oauth.py")
 
     def initialize_youtube_client(self, credentials=None):
         """
@@ -101,6 +109,70 @@ class YouTubePoster:
             logger.error(f"Error extracting comment ID: {e}")
             return None
 
+    def verify_reply_posted(self, parent_comment_id: str, expected_text: str,
+                           reply_id: Optional[str] = None) -> Dict:
+        """
+        Verify that a reply was actually posted and is visible.
+
+        Args:
+            parent_comment_id: The parent comment ID
+            expected_text: Expected reply text to match
+            reply_id: Optional reply ID returned from API
+
+        Returns:
+            Dictionary with verification status
+        """
+        if not self.youtube:
+            return {'verified': False, 'error': 'No YouTube client'}
+
+        try:
+            # Fetch replies to parent comment
+            response = self.youtube.comments().list(
+                part='snippet',
+                parentId=parent_comment_id,
+                textFormat='plainText',
+                maxResults=100
+            ).execute()
+
+            if not response.get('items'):
+                return {
+                    'verified': False,
+                    'error': 'No replies found on comment',
+                    'action': 'retry_post'
+                }
+
+            # Check if our reply exists
+            for item in response['items']:
+                comment_data = item['snippet']
+
+                # Match by reply ID if provided
+                if reply_id and item['id'] == reply_id:
+                    return {'verified': True, 'reply_id': reply_id, 'is_public': True}
+
+                # Match by text content (fuzzy match - first 50 chars)
+                if expected_text[:50] in comment_data['textDisplay'][:50]:
+                    return {
+                        'verified': True,
+                        'reply_id': item['id'],
+                        'is_public': True,
+                        'matched_by': 'text'
+                    }
+
+            # Reply not found
+            return {
+                'verified': False,
+                'error': 'Reply not visible on YouTube (may be held for review)',
+                'action': 'mark_pending_verification'
+            }
+
+        except HttpError as e:
+            logger.error(f"Error verifying reply: {e}")
+            return {
+                'verified': False,
+                'error': f'API error: {e}',
+                'action': 'retry_verification'
+            }
+
     def post_comment_reply(self, comment_id: str, reply_text: str) -> Dict:
         """
         Post a reply to a YouTube comment.
@@ -153,12 +225,36 @@ class YouTubePoster:
             self.replies_posted_today += 1
             self.last_post_time = datetime.now()
 
-            logger.info(f"✅ Reply posted successfully! ID: {response.get('id', 'unknown')}")
+            posted_reply_id = response.get('id')
+            logger.info(f"API returned reply ID: {posted_reply_id}, verifying visibility...")
+
+            # Wait 2 seconds for YouTube to process
+            time.sleep(2)
+
+            # Verify the reply is actually visible
+            verification = self.verify_reply_posted(
+                parent_comment_id=comment_id,
+                expected_text=reply_text,
+                reply_id=posted_reply_id
+            )
+
+            if not verification['verified']:
+                logger.warning(f"⚠️ Reply posted but not visible: {verification['error']}")
+                return {
+                    'status': 'posted_unverified',
+                    'comment_id': posted_reply_id,
+                    'error': verification['error'],
+                    'action': verification.get('action', 'manual_check')
+                }
+
+            # Reply is verified visible!
+            logger.info(f"✅ Reply posted AND verified visible! ID: {posted_reply_id}")
 
             return {
                 'status': 'success',
-                'comment_id': response.get('id'),
-                'posted_at': datetime.now().isoformat()
+                'comment_id': posted_reply_id,
+                'posted_at': datetime.now().isoformat(),
+                'verified': True
             }
 
         except HttpError as e:

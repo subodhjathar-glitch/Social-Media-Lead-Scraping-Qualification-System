@@ -21,11 +21,11 @@ class ReplyGenerator:
 
     def generate_reply(self, conversation_context: Dict, teacher_profile: Dict) -> Dict:
         """
-        Generate a reply based on conversation context.
+        Generate a reply based on conversation context and teacher's learned style.
 
         Args:
             conversation_context: Full conversation context
-            teacher_profile: Teacher's profile data
+            teacher_profile: Teacher's profile data (includes learned_style)
 
         Returns:
             Dictionary with reply text and metadata
@@ -33,8 +33,8 @@ class ReplyGenerator:
         # Build system prompt
         system_prompt = self._build_system_prompt(teacher_profile)
 
-        # Build user message with context
-        user_message = self._build_context_message(conversation_context)
+        # Build user message with context and learned style
+        user_message = self._build_context_message(conversation_context, teacher_profile)
 
         try:
             logger.info(f"Generating reply for {conversation_context.get('lead_name', 'Unknown')}")
@@ -142,8 +142,8 @@ class ReplyGenerator:
 }}
 """
 
-    def _build_context_message(self, context: Dict) -> str:
-        """Build context message for AI."""
+    def _build_context_message(self, context: Dict, teacher_profile: Dict = None) -> str:
+        """Build context message for AI with learned style guidance."""
         lead_name = context.get('lead_name', 'Unknown')
         stage = context.get('conversation_stage', 0)
         pain_type = context.get('pain_type', 'unknown')
@@ -163,8 +163,29 @@ class ReplyGenerator:
 {full_history}
 
 ---
+"""
 
-Generate your reply now. Remember:
+        # Add learned style guidance if available
+        if teacher_profile:
+            learned_style = teacher_profile.get('learned_style', {})
+            common_phrases = teacher_profile.get('common_phrases', [])
+
+            if learned_style and learned_style.get('total_edits', 0) >= 10:
+                verbosity = learned_style.get('tone_preferences', {}).get('verbosity', 'balanced')
+
+                message += "\n**IMPORTANT - Teacher Style Preferences:**\n"
+                if verbosity == 'more_detailed':
+                    message += "- This teacher prefers LONGER, MORE DETAILED responses. Elaborate more than usual.\n"
+                elif verbosity == 'more_concise':
+                    message += "- This teacher prefers CONCISE responses. Keep it brief and to the point.\n"
+
+                if common_phrases:
+                    phrases_list = ', '.join(common_phrases[:5])
+                    message += f"- Teacher's preferred phrases (use naturally): {phrases_list}\n"
+
+                message += "\n"
+
+        message += """Generate your reply now. Remember:
 - If Stage 0: Build rapport, ask questions, NO resources
 - If Stage 1+: Consider sharing resource if readiness >= 60 and appropriate
 - Keep it natural and conversational
