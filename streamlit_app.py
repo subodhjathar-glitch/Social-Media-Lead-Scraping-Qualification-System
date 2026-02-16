@@ -666,7 +666,7 @@ if page == "📊 Dashboard":
     st.markdown("# Dashboard")
     st.markdown("Welcome to your lead engagement hub")
 
-    # Get current teacher
+    # Get current teacher (basic info only - no need for full profile on dashboard)
     teacher = auth.get_current_teacher()
 
     # Metrics Row
@@ -764,7 +764,20 @@ elif page == "✅ Pending Approvals":
     st.markdown("# Pending Approvals")
     st.markdown("Review and approve AI-generated replies")
 
-    teacher = auth.get_current_teacher()
+    auth_info = auth.get_current_teacher()
+
+    # Fetch full teacher profile from database
+    teacher_result = supabase.table('teacher_profiles')\
+        .select('*')\
+        .eq('email', auth_info['email'])\
+        .single()\
+        .execute()
+
+    if not teacher_result.data:
+        st.error("Teacher profile not found. Please contact administrator.")
+        st.stop()
+
+    teacher = teacher_result.data
 
     # Check OAuth status
     oauth_enabled = is_oauth_configured()
@@ -1276,7 +1289,20 @@ elif page == "📚 Resources":
 elif page == "👤 My Profile":
     st.markdown("# My Profile")
 
-    teacher = auth.get_current_teacher()
+    auth_info = auth.get_current_teacher()
+
+    # Fetch full teacher profile from database
+    teacher_result = supabase.table('teacher_profiles')\
+        .select('*')\
+        .eq('email', auth_info['email'])\
+        .single()\
+        .execute()
+
+    if not teacher_result.data:
+        st.error("Teacher profile not found. Please contact administrator.")
+        st.stop()
+
+    teacher = teacher_result.data
 
     st.markdown(f"### Welcome, {teacher['teacher_name']}!")
 
