@@ -41,6 +41,20 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Clean up stale widget keys from previous page/session.
+# Newer Streamlit versions raise KeyError when session state holds a widget key
+# that no longer has a rendered widget. Purge them before any widget is drawn.
+_STALE_PREFIXES = (
+    'reply_', 'approve_', 'reject_', 'save_', 'copy_', 'history_',
+    'act_', 'wait_', 'all_', 'oth_',
+)
+for _k in list(st.session_state.keys()):
+    if any(_k.startswith(_p) for _p in _STALE_PREFIXES):
+        try:
+            del st.session_state[_k]
+        except Exception:
+            pass
+
 # ================================
 # YOGAVANI BRAND STYLING
 # ================================
