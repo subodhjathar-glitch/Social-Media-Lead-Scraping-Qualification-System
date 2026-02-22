@@ -192,12 +192,22 @@ st.markdown("""
         line-height: 1.6;
         background-color: #FFFFFF !important;
         color: #333333 !important;
+        caret-color: #333333 !important;
     }
 
     .stTextArea textarea:focus, .stTextInput input:focus {
         border-color: var(--color-green);
         box-shadow: 0 0 0 2px rgba(62, 73, 56, 0.1);
         background-color: #FFFFFF !important;
+        color: #333333 !important;
+        caret-color: #333333 !important;
+        outline: none;
+    }
+
+    /* Ensure disabled textareas also have correct contrast */
+    .stTextArea textarea:disabled {
+        background-color: #F8F8F8 !important;
+        color: #444444 !important;
     }
 
     /* Fix autofill background */
@@ -856,26 +866,6 @@ elif page == "✅ Pending Approvals":
                             }).eq('id', reply['id']).execute()
                             st.info(f"✓ Lead claimed by {teacher['teacher_name']}")
 
-                        # Capture edit for learning (non-blocking — approval continues even if this fails)
-                        original_text = reply['ai_generated_reply']
-
-                        if edited_reply != original_text:
-                            try:
-                                supabase.table('teacher_edits').insert({
-                                    'teacher_id': teacher['id'],
-                                    'pending_reply_id': reply['id'],
-                                    'original_ai_text': original_text,
-                                    'edited_text': edited_reply,
-                                    'edit_timestamp': datetime.now().isoformat(),
-                                    'lead_context': {
-                                        'pain_type': thread.get('pain_type'),
-                                        'readiness_score': thread.get('readiness_score'),
-                                        'conversation_stage': thread.get('conversation_stage')
-                                    }
-                                }).execute()
-                                logger.info(f"Captured edit for teacher learning: {teacher['teacher_name']}")
-                            except Exception as learning_err:
-                                logger.warning(f"Could not save edit for learning (non-critical): {learning_err}")
 
                         # Update reply with edited text
                         supabase.table('pending_replies').update({
