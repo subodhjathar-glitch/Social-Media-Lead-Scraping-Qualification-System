@@ -907,10 +907,17 @@ elif page == "✅ Pending Approvals":
                                                 'posted_at': result['posted_at']
                                             }).eq('id', reply['id']).execute()
 
-                                            # Update thread
+                                            # Update thread + append reply to history
+                                            next_stage = thread.get('conversation_stage', 0) + 1
+                                            new_history = (thread.get('full_history') or '') + (
+                                                f"\n\n[Stage {next_stage} - Teacher Reply | {datetime.now().strftime('%Y-%m-%d')}]\n"
+                                                f"Teacher ({teacher['teacher_name']}): {edited_reply}"
+                                            )
                                             supabase.table('conversation_threads').update({
-                                                'conversation_stage': thread.get('conversation_stage', 0) + 1,
-                                                'last_reply_date': datetime.now().strftime('%Y-%m-%d')
+                                                'conversation_stage': next_stage,
+                                                'last_reply_date': datetime.now().strftime('%Y-%m-%d'),
+                                                'full_history': new_history,
+                                                'status': 'waiting_response'
                                             }).eq('id', thread.get('id')).execute()
 
                                             st.success("✅ Reply posted to YouTube and verified visible!")
@@ -1055,10 +1062,17 @@ elif page == "🚀 Approved Replies":
                                 'posted_at': datetime.now().isoformat()
                             }).eq('id', reply['id']).execute()
 
-                            # Update thread stage
+                            # Update thread stage + append reply to history
+                            next_stage = thread.get('conversation_stage', 0) + 1
+                            new_history = (thread.get('full_history') or '') + (
+                                f"\n\n[Stage {next_stage} - Teacher Reply | {datetime.now().strftime('%Y-%m-%d')}]\n"
+                                f"Teacher: {reply['ai_generated_reply']}"
+                            )
                             supabase.table('conversation_threads').update({
-                                'conversation_stage': thread.get('conversation_stage', 0) + 1,
-                                'last_reply_date': datetime.now().strftime('%Y-%m-%d')
+                                'conversation_stage': next_stage,
+                                'last_reply_date': datetime.now().strftime('%Y-%m-%d'),
+                                'full_history': new_history,
+                                'status': 'waiting_response'
                             }).eq('id', thread.get('id')).execute()
 
                             st.success("✅ Marked as posted!")
@@ -1120,43 +1134,93 @@ elif page == "🚀 Approved Replies":
 # PAGE: CONVERSATIONS
 # ================================
 elif page == "💬 Conversations":
-    st.markdown("# Active Conversations")
-    st.markdown("View ongoing conversation threads with leads")
+    st.markdown("# Conversations")
+    st.markdown("View all conversation threads with leads")
 
-    threads = supabase.table('conversation_threads')\
+    all_threads = supabase.table('conversation_threads')\
         .select('*')\
-        .eq('status', 'active')\
         .order('updated_at', desc=True)\
         .execute()
 
-    if not threads.data:
-        st.info("No active conversations yet")
-    else:
-        st.success(f"💬 {len(threads.data)} active conversations")
+    threads_data = all_threads.data or []
 
-        for thread in threads.data:
-            with st.expander(
-                f"**{thread['comment_author']}** | "
-                f"Stage {thread['conversation_stage']} | "
-                f"Readiness: {thread.get('readiness_score', 0)}%"
-            ):
-                col1, col2 = st.columns([3, 1])
+    # Bucket by status
+    active_threads = [t for t in threads_data if t.get('status') == 'active']
+    waiting_threads = [t for t in threads_data if t.get('status') == 'waiting_response']
+    other_threads = [t for t in threads_data if t.get('status') not in ('active', 'waiting_response')]
 
-                with col1:
-                    st.markdown("**Original Comment:**")
-                    st.write(thread['original_comment'])
+    tab_all, tab_waiting, tab_active, tab_other = st.tabs([
+        f"All ({len(threads_data)})",
+        f"Waiting Response ({len(waiting_threads)})",
+        f"Active ({len(active_threads)})",
+        f"Other ({len(other_threads)})",
+    ])
 
-                    if thread.get('full_history'):
-                        st.markdown("**Conversation History:**")
-                        st.text_area("", value=thread['full_history'], height=200, disabled=True, key=f"history_{thread['id']}")
+    def render_thread_card(thread, key_prefix=""):
+        status = thread.get('status', 'unknown')
+        status_emoji = {"active": "🟢", "waiting_response": "⏳", "closed": "✅"}.get(status, "⚪")
+        with st.expander(
+            f"{status_emoji} **{thread['comment_author']}** | "
+            f"Stage {thread['conversation_stage']} | "
+            f"Readiness: {thread.get('readiness_score', 0)}% | "
+            f"Status: {status}"
+        ):
+            col1, col2 = st.columns([3, 1])
 
-                with col2:
-                    st.markdown(get_pain_badge(thread.get('pain_type', 'unknown')), unsafe_allow_html=True)
-                    st.metric("Stage", thread['conversation_stage'])
-                    st.metric("Readiness", f"{thread['readiness_score']}%")
+            with col1:
+                st.markdown("**Original Comment:**")
+                st.write(thread['original_comment'])
 
-                    if thread.get('comment_url'):
-                        st.link_button("🔗 YouTube", thread['comment_url'])
+                if thread.get('full_history'):
+                    st.markdown("**Conversation History:**")
+                    st.text_area(
+                        "",
+                        value=thread['full_history'],
+                        height=200,
+                        disabled=True,
+                        key=f"{key_prefix}history_{thread['id']}"
+                    )
+                else:
+                    st.caption("No reply history yet.")
+
+            with col2:
+                st.markdown(get_pain_badge(thread.get('pain_type', 'unknown')), unsafe_allow_html=True)
+                st.metric("Stage", thread['conversation_stage'])
+                st.metric("Readiness", f"{thread.get('readiness_score', 0)}%")
+
+                if thread.get('comment_url'):
+                    st.link_button("🔗 YouTube", thread['comment_url'])
+
+    with tab_all:
+        if not threads_data:
+            st.info("No conversations yet")
+        else:
+            st.success(f"💬 {len(threads_data)} total conversations")
+            for thread in threads_data:
+                render_thread_card(thread, key_prefix="all_")
+
+    with tab_waiting:
+        if not waiting_threads:
+            st.info("No conversations waiting for response")
+        else:
+            st.success(f"⏳ {len(waiting_threads)} conversations waiting for lead response")
+            for thread in waiting_threads:
+                render_thread_card(thread, key_prefix="wait_")
+
+    with tab_active:
+        if not active_threads:
+            st.info("No active conversations")
+        else:
+            st.success(f"🟢 {len(active_threads)} active conversations")
+            for thread in active_threads:
+                render_thread_card(thread, key_prefix="act_")
+
+    with tab_other:
+        if not other_threads:
+            st.info("No other conversations")
+        else:
+            for thread in other_threads:
+                render_thread_card(thread, key_prefix="oth_")
 
 
 # ================================
