@@ -145,6 +145,8 @@ class SupabaseDatabase:
     def batch_create_leads(self, leads: List[Dict]) -> List[Dict]:
         """
         Create multiple leads in Supabase (batch operation).
+        Uses upsert with ignore_duplicates=True so a single duplicate
+        never fails the whole batch.
         Falls back to local JSON storage if Supabase is unavailable.
 
         Args:
@@ -162,7 +164,7 @@ class SupabaseDatabase:
 
         created_records = []
 
-        # Process in batches (Supabase can handle larger batches than Airtable)
+        # Process in batches
         batch_size = 100
         for i in range(0, len(leads), batch_size):
             batch = leads[i:i + batch_size]
@@ -191,24 +193,29 @@ class SupabaseDatabase:
                     }
                     data_list.append(data)
 
-                # Batch insert
-                response = self.client.table('leads').insert(data_list).execute()
+                # Use upsert with ignore_duplicates=True so existing leads are
+                # silently skipped (ON CONFLICT DO NOTHING) instead of crashing
+                # the entire batch.
+                response = self.client.table('leads').upsert(
+                    data_list,
+                    on_conflict='lead_hash',
+                    ignore_duplicates=True
+                ).execute()
 
                 if response.data:
                     created_records.extend(response.data)
-                    logger.info(f"Created batch of {len(response.data)} leads in Supabase")
+                    logger.info(f"Upserted batch: {len(response.data)} new leads stored in Supabase")
+                else:
+                    logger.info(f"Batch of {len(data_list)} processed — all were duplicates, none new.")
 
             except Exception as e:
-                logger.warning(f"Supabase batch insert failed: {e}. Saving locally instead.")
-                # Save this batch locally
+                logger.warning(f"Supabase batch upsert failed: {e}. Saving locally instead.")
                 self._save_leads_locally(batch)
 
-        if not created_records and leads:
-            # All batches failed, save everything locally
-            logger.warning("All Supabase operations failed. Saving all leads locally.")
-            return self._save_leads_locally(leads)
+        if not created_records:
+            logger.info("No new leads to store (all duplicates or all batches failed).")
 
-        logger.info(f"Total leads created in Supabase: {len(created_records)}")
+        logger.info(f"Total new leads stored in Supabase: {len(created_records)}")
         return created_records
 
     def _save_leads_locally(self, leads: List[Dict]) -> List[Dict]:
@@ -296,6 +303,7 @@ class SupabaseDatabase:
     def process_comments(self, comments: List[Dict]) -> tuple[List[Dict], List[Dict]]:
         """
         Process comments: check for duplicates and add hash.
+        Uses a single batch query instead of one query per comment.
 
         Args:
             comments: List of qualified comment dictionaries
@@ -308,8 +316,8 @@ class SupabaseDatabase:
 
         logger.info(f"Processing {len(comments)} comments for duplicates")
 
+        # First pass: assign hashes to all comments
         for comment in comments:
-            # Generate hash
             lead_hash = generate_lead_hash(
                 comment.get('author', ''),
                 'youtube',
@@ -317,8 +325,24 @@ class SupabaseDatabase:
             )
             comment['hash'] = lead_hash
 
-            # Check if duplicate
-            if self.check_duplicate(lead_hash):
+        if self.is_available and self.client:
+            # Batch duplicate check: one DB query instead of N queries
+            try:
+                all_hashes = [c['hash'] for c in comments]
+                response = self.client.table('leads').select('lead_hash').in_(
+                    'lead_hash', all_hashes
+                ).execute()
+                existing_hashes = {r['lead_hash'] for r in (response.data or [])}
+                logger.info(f"Batch duplicate check found {len(existing_hashes)} existing leads")
+            except Exception as e:
+                logger.warning(f"Batch duplicate check failed, falling back to no-dedup: {e}")
+                existing_hashes = set()
+        else:
+            # Offline mode — assume nothing is a duplicate
+            existing_hashes = set()
+
+        for comment in comments:
+            if comment['hash'] in existing_hashes:
                 duplicate_comments.append(comment)
             else:
                 unique_comments.append(comment)
