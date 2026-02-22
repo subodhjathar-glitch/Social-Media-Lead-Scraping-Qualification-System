@@ -856,24 +856,26 @@ elif page == "✅ Pending Approvals":
                             }).eq('id', reply['id']).execute()
                             st.info(f"✓ Lead claimed by {teacher['teacher_name']}")
 
-                        # Capture edit for learning
+                        # Capture edit for learning (non-blocking — approval continues even if this fails)
                         original_text = reply['ai_generated_reply']
 
                         if edited_reply != original_text:
-                            # Teacher edited - save for learning
-                            supabase.table('teacher_edits').insert({
-                                'teacher_id': teacher['id'],
-                                'pending_reply_id': reply['id'],
-                                'original_ai_text': original_text,
-                                'edited_text': edited_reply,
-                                'edit_timestamp': datetime.now().isoformat(),
-                                'lead_context': {
-                                    'pain_type': thread.get('pain_type'),
-                                    'readiness_score': thread.get('readiness_score'),
-                                    'conversation_stage': thread.get('conversation_stage')
-                                }
-                            }).execute()
-                            logger.info(f"Captured edit for teacher learning: {teacher['teacher_name']}")
+                            try:
+                                supabase.table('teacher_edits').insert({
+                                    'teacher_id': teacher['id'],
+                                    'pending_reply_id': reply['id'],
+                                    'original_ai_text': original_text,
+                                    'edited_text': edited_reply,
+                                    'edit_timestamp': datetime.now().isoformat(),
+                                    'lead_context': {
+                                        'pain_type': thread.get('pain_type'),
+                                        'readiness_score': thread.get('readiness_score'),
+                                        'conversation_stage': thread.get('conversation_stage')
+                                    }
+                                }).execute()
+                                logger.info(f"Captured edit for teacher learning: {teacher['teacher_name']}")
+                            except Exception as learning_err:
+                                logger.warning(f"Could not save edit for learning (non-critical): {learning_err}")
 
                         # Update reply with edited text
                         supabase.table('pending_replies').update({
@@ -1421,8 +1423,9 @@ elif page == "👤 My Profile":
         else:
             st.info("💡 Start editing AI responses to train the system to match your style!")
 
-    except Exception as e:
-        st.warning(f"Learning system unavailable: {e}")
+    except Exception:
+        # teacher_edits table may not exist yet — show a friendly message instead of error
+        st.info("💡 Start editing AI responses to train the system to match your style!")
 
     st.markdown("---")
 
