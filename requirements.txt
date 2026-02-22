@@ -16,7 +16,8 @@ google-auth==2.27.0
 google-auth-oauthlib==1.2.0
 google-auth-httplib2==0.2.0
 
-# Streamlit UI (streamlit is preinstalled on Community Cloud; omit to avoid installer conflicts)
+# Streamlit UI
+streamlit>=1.31.0
 plotly==5.18.0
 pandas==2.1.4
 
