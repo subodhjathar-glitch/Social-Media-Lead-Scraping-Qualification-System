@@ -614,6 +614,44 @@ auth.require_auth()
 # HELPER FUNCTIONS
 # ================================
 
+def get_or_create_teacher(email: str) -> dict:
+    """
+    Get teacher profile by email (case-insensitive).
+    Auto-creates a basic profile if one doesn't exist so any allowed
+    user can approve and post without manual DB setup.
+    """
+    email_lower = email.strip().lower()
+
+    # Try exact match first
+    result = supabase.table('teacher_profiles').select('*').eq('email', email_lower).execute()
+    if result.data:
+        return result.data[0]
+
+    # Try case-insensitive match (handles profiles saved with different case)
+    result = supabase.table('teacher_profiles').select('*').ilike('email', email_lower).execute()
+    if result.data:
+        return result.data[0]
+
+    # Auto-create a basic profile so the teacher can start working immediately
+    name = email_lower.split('@')[0].replace('.', ' ').title()
+    new_profile = {
+        'teacher_name': name,
+        'email': email_lower,
+        'tone_preference': 'Compassionate',
+        'daily_reply_limit': 10,
+        'active': True,
+        'role': '',
+        'sign_off': '',
+    }
+    created = supabase.table('teacher_profiles').insert(new_profile).execute()
+    if created.data:
+        return created.data[0]
+
+    # Fallback: return a minimal dict so the page never hard-stops
+    return {'email': email_lower, 'teacher_name': name, 'id': None,
+            'tone_preference': 'Compassionate', 'daily_reply_limit': 10}
+
+
 def get_status_badge(status: str) -> str:
     """Generate HTML for status badge."""
     emoji_map = {'pending': '⏳', 'approved': '✅', 'posted': '🚀', 'rejected': '❌'}
@@ -797,19 +835,7 @@ elif page == "✅ Pending Approvals":
     st.markdown("Review and approve AI-generated replies")
 
     auth_info = auth.get_current_teacher()
-
-    # Fetch full teacher profile from database
-    teacher_result = supabase.table('teacher_profiles')\
-        .select('*')\
-        .eq('email', auth_info['email'])\
-        .single()\
-        .execute()
-
-    if not teacher_result.data:
-        st.error("Teacher profile not found. Please contact administrator.")
-        st.stop()
-
-    teacher = teacher_result.data
+    teacher = get_or_create_teacher(auth_info['email'])
 
     # Check OAuth status
     oauth_enabled = is_oauth_configured()
@@ -1439,19 +1465,7 @@ elif page == "👤 My Profile":
     st.markdown("# My Profile")
 
     auth_info = auth.get_current_teacher()
-
-    # Fetch full teacher profile from database
-    teacher_result = supabase.table('teacher_profiles')\
-        .select('*')\
-        .eq('email', auth_info['email'])\
-        .single()\
-        .execute()
-
-    if not teacher_result.data:
-        st.error("Teacher profile not found. Please contact administrator.")
-        st.stop()
-
-    teacher = teacher_result.data
+    teacher = get_or_create_teacher(auth_info['email'])
 
     st.markdown(f"### Welcome, {teacher['teacher_name']}!")
 
