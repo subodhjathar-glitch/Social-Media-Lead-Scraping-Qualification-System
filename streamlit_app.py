@@ -18,6 +18,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from supabase import create_client
 import os
+import time
 from dotenv import load_dotenv
 
 # Import authentication and YouTube posting
@@ -47,6 +48,7 @@ st.set_page_config(
 _STALE_PREFIXES = (
     'reply_', 'approve_', 'reject_', 'save_', 'copy_', 'history_',
     'act_', 'wait_', 'all_', 'oth_',
+    'skip_', 'mark_posted_', 'back_pending_', 'cancel_',
 )
 for _k in list(st.session_state.keys()):
     if any(_k.startswith(_p) for _p in _STALE_PREFIXES):
@@ -809,7 +811,20 @@ elif page == "✅ Pending Approvals":
     if oauth_enabled:
         st.success("✅ YouTube OAuth configured - Replies will post automatically!")
     else:
-        st.warning("⚠️ YouTube OAuth not configured - Run `python setup_youtube_oauth.py` to enable auto-posting")
+        with st.expander("⚠️ YouTube OAuth not configured — click for setup instructions"):
+            st.markdown("""
+**Auto-posting is disabled.** Approving a reply will mark it as *Approved* — you then go to
+**Approved Replies → Ready to Post** to copy the text and paste it manually on YouTube.
+
+**To enable auto-posting on Streamlit Cloud:**
+1. Run locally: `python setup_youtube_oauth.py` (opens browser for Google login)
+2. Then run: `python export_oauth_token.py` (prints a `YOUTUBE_TOKEN_JSON=...` line)
+3. Copy that line into **Streamlit Cloud → App → Settings → Secrets**
+4. Redeploy / reboot the app
+
+**To enable auto-posting locally:**
+Run `python setup_youtube_oauth.py` — this saves `youtube_token.pickle` and auto-posting will work immediately.
+            """)
 
     # Fetch ALL pending approvals (visible to all teachers)
     st.info("💡 **New System:** All leads visible to all teachers. You can claim any lead by approving it.")
@@ -939,33 +954,77 @@ elif page == "✅ Pending Approvals":
                                             st.info("👉 Go to 'Approved Replies' to post manually if needed")
 
                                         else:
-                                            # Mark as approved but not posted
+                                            # Mark as approved but not posted — still update thread history
                                             supabase.table('pending_replies').update({
                                                 'approval_status': 'approved',
                                                 'approved_at': datetime.now().isoformat()
                                             }).eq('id', reply['id']).execute()
+
+                                            if thread.get('id'):
+                                                next_stage = thread.get('conversation_stage', 0) + 1
+                                                new_history = (thread.get('full_history') or '') + (
+                                                    f"\n\n[Stage {next_stage} - Teacher Reply | {datetime.now().strftime('%Y-%m-%d')}]\n"
+                                                    f"Teacher ({teacher['teacher_name']}): {edited_reply}\n"
+                                                    f"[Status: Approved — pending manual post]"
+                                                )
+                                                supabase.table('conversation_threads').update({
+                                                    'conversation_stage': next_stage,
+                                                    'last_reply_date': datetime.now().strftime('%Y-%m-%d'),
+                                                    'full_history': new_history,
+                                                    'status': 'waiting_response'
+                                                }).eq('id', thread['id']).execute()
 
                                             st.error(f"❌ Failed to post: {result.get('error', 'Unknown error')}")
                                             st.info("👉 Go to 'Approved Replies' to post manually")
 
                                 except Exception as e:
                                     st.error(f"❌ Error: {e}")
-                                    # Mark as approved
+                                    # Mark as approved and update thread
                                     supabase.table('pending_replies').update({
                                         'approval_status': 'approved',
                                         'approved_at': datetime.now().isoformat()
                                     }).eq('id', reply['id']).execute()
+
+                                    if thread.get('id'):
+                                        next_stage = thread.get('conversation_stage', 0) + 1
+                                        new_history = (thread.get('full_history') or '') + (
+                                            f"\n\n[Stage {next_stage} - Teacher Reply | {datetime.now().strftime('%Y-%m-%d')}]\n"
+                                            f"Teacher ({teacher['teacher_name']}): {edited_reply}\n"
+                                            f"[Status: Approved — pending manual post]"
+                                        )
+                                        supabase.table('conversation_threads').update({
+                                            'conversation_stage': next_stage,
+                                            'last_reply_date': datetime.now().strftime('%Y-%m-%d'),
+                                            'full_history': new_history,
+                                            'status': 'waiting_response'
+                                        }).eq('id', thread['id']).execute()
+
                                     st.info("👉 Moved to 'Approved Replies' for manual posting")
 
                         else:
-                            # OAuth not configured - mark as approved for manual posting
+                            # OAuth not configured - mark as approved and update thread history
                             supabase.table('pending_replies').update({
                                 'approval_status': 'approved',
                                 'approved_at': datetime.now().isoformat()
                             }).eq('id', reply['id']).execute()
 
-                            st.success("✅ Reply approved!")
-                            st.info("👉 Go to 'Approved Replies' to post it manually")
+                            # Always update conversation thread history so Conversations page shows it
+                            if thread.get('id'):
+                                next_stage = thread.get('conversation_stage', 0) + 1
+                                new_history = (thread.get('full_history') or '') + (
+                                    f"\n\n[Stage {next_stage} - Teacher Reply | {datetime.now().strftime('%Y-%m-%d')}]\n"
+                                    f"Teacher ({teacher['teacher_name']}): {edited_reply}\n"
+                                    f"[Status: Approved — pending manual post to YouTube]"
+                                )
+                                supabase.table('conversation_threads').update({
+                                    'conversation_stage': next_stage,
+                                    'last_reply_date': datetime.now().strftime('%Y-%m-%d'),
+                                    'full_history': new_history,
+                                    'status': 'waiting_response'
+                                }).eq('id', thread['id']).execute()
+
+                            st.success("✅ Reply approved! Conversation history updated.")
+                            st.info("👉 Go to **Approved Replies** → *Ready to Post* to copy it and post manually on YouTube")
 
                         st.rerun()
 
