@@ -19,20 +19,20 @@ class Settings(BaseSettings):
     )
 
     # YouTube API
-    youtube_api_key: str
+    youtube_api_key: str = ""
     youtube_quota_limit: int = 3330
     min_subscriber_count: int = 100000
 
     # OpenAI API
-    openai_api_key: str
+    openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
     openai_temperature: float = 0.3
     openai_max_tokens: int = 200
 
     # Supabase (replaces Airtable)
-    supabase_url: str
-    supabase_key: str  # Anon/public key for client
-    supabase_service_role_key: str = ""  # Service role key for backend operations (bypasses RLS)
+    supabase_url: str = ""
+    supabase_key: str = ""
+    supabase_service_role_key: str = ""
 
     # Airtable (deprecated - kept for backward compatibility)
     airtable_token: str = ""
@@ -40,9 +40,9 @@ class Settings(BaseSettings):
     airtable_table_name: str = "Leads"
 
     # Email
-    email_from: str
-    email_to: str
-    email_password: str
+    email_from: str = ""
+    email_to: str = ""
+    email_password: str = ""
 
     # Scraping Configuration
     search_terms: str = "Sadhguru official,Sadhguru meditation,Sadhguru yoga"
