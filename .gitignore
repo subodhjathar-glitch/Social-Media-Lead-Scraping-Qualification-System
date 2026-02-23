@@ -56,4 +56,6 @@ token.json
 
 # Backup files
 *_old.py
-*_backup.py
+*_backup.pyyoutube_token.pickle
+youtube_token.json
+do_oauth.py
