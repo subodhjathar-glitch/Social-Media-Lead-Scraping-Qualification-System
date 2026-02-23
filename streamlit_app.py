@@ -199,8 +199,14 @@ st.markdown("""
         border-top: none;
     }
 
-    /* Text Areas & Inputs - Fixed Black Background */
-    .stTextArea textarea, .stTextInput input {
+    /* Text Areas & Inputs - Visible cursor fix */
+    .stTextArea textarea,
+    .stTextArea textarea:focus,
+    .stTextArea textarea:active,
+    .stTextArea textarea:hover,
+    .stTextInput input,
+    .stTextInput input:focus,
+    .stTextInput input:active {
         border-radius: 6px;
         border: 1px solid #D0D0D0;
         padding: 0.8rem;
@@ -208,15 +214,14 @@ st.markdown("""
         line-height: 1.6;
         background-color: #FFFFFF !important;
         color: #333333 !important;
-        caret-color: #333333 !important;
+        -webkit-text-fill-color: #333333 !important;
+        caret-color: #000000 !important;
+        opacity: 1 !important;
     }
 
     .stTextArea textarea:focus, .stTextInput input:focus {
         border-color: var(--color-green);
         box-shadow: 0 0 0 2px rgba(62, 73, 56, 0.1);
-        background-color: #FFFFFF !important;
-        color: #333333 !important;
-        caret-color: #333333 !important;
         outline: none;
     }
 
@@ -224,6 +229,7 @@ st.markdown("""
     .stTextArea textarea:disabled {
         background-color: #F8F8F8 !important;
         color: #444444 !important;
+        -webkit-text-fill-color: #444444 !important;
     }
 
     /* Fix autofill background */
